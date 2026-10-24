@@ -26,14 +26,18 @@ ul{list-style:none;padding:0;display:grid;gap:9px}
 li{display:flex;gap:14px;font-size:22px;line-height:1.3}
 li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
 #cal{gap:0}
-#cal li{font-size:26px;padding:7px 0;border-bottom:1px solid var(--line)}
+#cal li{font-size:26px;padding:6px 0;border-bottom:1px solid var(--line)}
 #cal li:last-child{border-bottom:0}
 #cal li span:last-child{-webkit-line-clamp:1}
 .dd{min-width:122px;flex:none;font-size:22px;color:var(--mu);padding-top:3px}
 .dd.td{color:var(--hi);font-weight:700}
-.ev b{color:var(--hi);font-weight:700;margin-right:12px;font-variant-numeric:tabular-nums}
-#news{gap:12px}
-#news li{font-size:26px;line-height:1.3;border-left:4px solid var(--hi);padding-left:14px}
+.ev b{display:inline-block;min-width:80px;color:var(--hi);font-weight:700;margin-right:12px;font-variant-numeric:tabular-nums}
+#news{gap:10px}
+#news li.lead{display:block;border-left:4px solid var(--hi);padding-left:14px}
+.lt,.ld{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.lt{font-size:27px;line-height:1.3;font-weight:700;-webkit-line-clamp:2}
+.ld{font-size:19px;line-height:1.4;color:var(--mu);margin-top:4px;-webkit-line-clamp:2}
+#news li.sm{display:block;font-size:22px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:18px}
 .wx{display:flex;gap:22px;align-items:center}
 .wx .big{font-size:84px;font-weight:700;line-height:1}
 .wx small{color:var(--mu);display:block;font-size:21px}
@@ -125,22 +129,38 @@ function chk(r,t){
  if(r.status==502)throw Error("取得元がエラーを返しました("+t.replace("upstream:","")+")。URLを確認");
  if(!r.ok)throw Error("取得に失敗しました("+r.status+")")}
 const FB="https://news.yahoo.co.jp/rss/topics/top-picks.xml";
-async function feed(u){const r=await fetch(px(u));const t=await r.text();
- chk(r,t);
- const it=[...new DOMParser().parseFromString(t,"text/xml").querySelectorAll("item")].slice(0,3);
+async function feed(u){const r=await fetch(px(u));const t=await r.text();chk(r,t);
+ const it=[...new DOMParser().parseFromString(t,"text/xml").querySelectorAll("item")].slice(0,6);
  if(!it.length)throw Error("RSSの形式が読み取れません");
- return it.map(i=>i.querySelector("title").textContent)}
+ return it.map(i=>{const q=s=>{const e=i.querySelector(s);return e?e.textContent.replace(/<[^>]*>/g,"").trim():""};return{t:q("title"),d:q("description")}})}
+let NW=[],NI=0;
+function drawNews(){const u=$("news"),n=NW.length;if(!n)return;
+ const g=k=>NW[(NI+k)%n],lead=el("li","lead");
+ lead.append(el("div","lt",g(0).t));if(g(0).d&&g(0).d!=g(0).t)lead.append(el("div","ld",g(0).d));
+ const it=[lead];for(let k=1;k<Math.min(3,n);k++)it.push(el("li","sm",g(k).t));
+ u.replaceChildren(...it)}
 async function news(){const u=$("news");let h="ニュース",ts;
  try{ts=await feed(C.rss)}catch(e){
   try{ts=await feed(FB);h="ニュース(代替: Yahoo!)"}catch{u.replaceChildren(el("li","err",e.message+" URL: "+C.rss));return}}
- $("nwh").textContent=h;
- u.replaceChildren(...ts.map(s=>{const l=el("li");l.append(el("span",null,s));return l}))}
+ $("nwh").textContent=h;NW=ts;NI=0;drawNews()}
 
 /* カレンダー(ICS) */
 function pd(v,p){const m=v.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)?)?$/);if(!m)return null;
  const allDay=m[4]==null;
  const d=m[7]?new Date(Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))):new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
  return{d,allDay}}
+let EV=[],EVN=0;
+function drawCal(){const u=$("cal"),now=new Date();
+ if(!EV.length&&!EVN&&!C.ics)return;
+ const L=EV.filter(e=>e.allDay||e.end>now);
+ if(!L.length){u.replaceChildren(el("li",null,EV.length?"残りの予定はありません":"今後7日間の予定はありません(カレンダー全体では"+EVN+"件)"));return}
+ let last="";
+ u.replaceChildren(...L.slice(0,5).map(e=>{const l=el("li"),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const dd=Math.round((new Date(e.d.getFullYear(),e.d.getMonth(),e.d.getDate())-t0)/864e5);
+  const day=dd==0?"今日":dd==1?"明日":`${e.d.getMonth()+1}/${e.d.getDate()}(${WD[e.d.getDay()]})`;
+  const a=el("span","dd"+(dd==0?" td":""),day==last?"":day);last=day;
+  const sp=el("span","ev");sp.append(el("b",null,e.allDay?"終日":p2(e.d.getHours())+":"+p2(e.d.getMinutes())),document.createTextNode(e.sum));
+  l.append(a,sp);return l}))}
 async function cal(){const u=$("cal");
  if(!C.ics){u.replaceChildren(el("li","err","設定でカレンダーのURLを入力してください"));return}
  try{
@@ -154,6 +174,7 @@ async function cal(){const u=$("cal");
    const g=n=>{const m=blk.match(new RegExp("^"+n+"([;:][^\\r\\n]*)$","m"));return m?m[1]:null};
    const ds=g("DTSTART");if(!ds)continue;
    const s=pd(ds.slice(ds.lastIndexOf(":")+1).trim());if(!s)continue;
+   const de=g("DTEND");const en=de?pd(de.slice(de.lastIndexOf(":")+1).trim()):null;const dur=!s.allDay&&en?Math.max(en.d-s.d,0):3600e3;
    const sum=(g("SUMMARY")||"").replace(/^[^:]*:/,"").replace(/\\,/g,",").replace(/\\n/g," ")||"(無題)";
    const rr=g("RRULE");let starts=[s.d];
    if(rr){const f=(rr.match(/FREQ=(\w+)/)||[])[1],iv=+((rr.match(/INTERVAL=(\d+)/)||[])[1]||1);
@@ -163,16 +184,8 @@ async function cal(){const u=$("cal");
     for(let k=0;k<400&&c<to;k++){if(c>=from&&(!lim||c<=lim))starts.push(new Date(c));
      if(step)c=new Date(c.getTime()+step);else if(f=="MONTHLY")c.setMonth(c.getMonth()+iv);else if(f=="YEARLY")c.setFullYear(c.getFullYear()+iv);else break}
     starts=starts.slice(1)}
-   for(const d of starts)if(d>=from&&d<to)ev.push({d,allDay:s.allDay,sum})}
-  ev.sort((a,b)=>a.d-b.d);
-  if(!ev.length){u.replaceChildren(el("li",null,"今後7日間の予定はありません(カレンダー全体では"+(t.split("BEGIN:VEVENT").length-1)+"件)"));return}
-  let last="";
-  u.replaceChildren(...ev.slice(0,5).map(e=>{const l=el("li"),n=new Date(),t0=new Date(n.getFullYear(),n.getMonth(),n.getDate());
-   const dd=Math.round((new Date(e.d.getFullYear(),e.d.getMonth(),e.d.getDate())-t0)/864e5);
-   const day=dd==0?"今日":dd==1?"明日":`${e.d.getMonth()+1}/${e.d.getDate()}(${WD[e.d.getDay()]})`;
-   const a=el("span","dd"+(dd==0?" td":""),day==last?"":day);last=day;
-   const sp=el("span","ev");sp.append(el("b",null,e.allDay?"終日":p2(e.d.getHours())+":"+p2(e.d.getMinutes())),document.createTextNode(e.sum));
-   l.append(a,sp);return l}));
+   for(const d of starts)if(d>=from&&d<to)ev.push({d,allDay:s.allDay,sum,end:new Date(d.getTime()+dur)})}
+  EV=ev.sort((a,b)=>a.d-b.d);EVN=t.split("BEGIN:VEVENT").length-1;drawCal();
  }catch(e){u.replaceChildren(el("li","err",e.message||"予定を取得できません"))}}
 
 /* 時刻表 */
@@ -204,7 +217,7 @@ document.body.addEventListener("click",lock,{once:true});lock();
 setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
 tick();setInterval(tick,1000);
 weather();news();cal();
-setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);
+setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);setInterval(drawCal,6e4);setInterval(()=>{NI++;drawNews()},2e4);
 </script>
 </body>
 </html>
