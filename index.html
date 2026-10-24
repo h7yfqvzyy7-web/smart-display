@@ -53,7 +53,7 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
   <section class="clock"><div id="time">--:--:--</div><div id="date"></div><button id="gear" aria-label="設定">設定</button></section>
   <section><h2>今日からの予定</h2><ul id="cal"></ul></section>
   <section><h2 id="wxh">天気</h2><div id="wx"></div></section>
-  <section><h2>ニュース</h2><ul id="news"></ul></section>
+  <section><h2 id="nwh">ニュース</h2><ul id="news"></ul></section>
   <section><h2 id="trh">時刻表</h2><div id="tr"></div></section>
 </main>
 
@@ -110,15 +110,18 @@ async function weather(){const b=$("wx");
  }catch(e){b.replaceChildren(el("div","err",e.message))}}
 
 /* RSS */
-async function news(){const u=$("news");
- try{const r=await fetch(px(C.rss));const t=await r.text();
-  if(/^\s*(<!doctype html|<html)/i.test(t))throw Error("中継機能が動いていません(functionsフォルダの場所を確認)");
-  if(!r.ok)throw Error("取得に失敗しました("+r.status+")");
-  const x=new DOMParser().parseFromString(t,"text/xml");
-  const it=[...x.querySelectorAll("item")].slice(0,4);
-  if(!it.length)throw Error("RSSの形式が読み取れません");
-  u.replaceChildren(...it.map(i=>{const l=el("li");l.append(el("span",null,i.querySelector("title").textContent));return l}));
- }catch(e){u.replaceChildren(el("li","err",e.message+"(設定のRSS URLを確認)"))}}
+const FB="https://news.yahoo.co.jp/rss/topics/top-picks.xml";
+async function feed(u){const r=await fetch(px(u));const t=await r.text();
+ if(/^\s*(<!doctype html|<html)/i.test(t))throw Error("中継機能が動いていません(functionsフォルダの場所を確認)");
+ if(!r.ok)throw Error("取得に失敗しました("+r.status+")");
+ const it=[...new DOMParser().parseFromString(t,"text/xml").querySelectorAll("item")].slice(0,4);
+ if(!it.length)throw Error("RSSの形式が読み取れません");
+ return it.map(i=>i.querySelector("title").textContent)}
+async function news(){const u=$("news");let h="ニュース",ts;
+ try{ts=await feed(C.rss)}catch(e){
+  try{ts=await feed(FB);h="ニュース(代替: Yahoo!)"}catch{u.replaceChildren(el("li","err",e.message+" URL: "+C.rss));return}}
+ $("nwh").textContent=h;
+ u.replaceChildren(...ts.map(s=>{const l=el("li");l.append(el("span",null,s));return l}))}
 
 /* カレンダー(ICS) */
 function pd(v,p){const m=v.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)?)?$/);if(!m)return null;
