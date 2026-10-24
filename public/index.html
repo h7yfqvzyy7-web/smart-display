@@ -15,7 +15,12 @@
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--tx);font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));overflow:hidden;transition:background 3s,color 3s}
-main{height:100%;display:grid;gap:14px;grid-template-columns:1.5fr 1fr;grid-template-rows:auto 1fr 1fr;transition:transform 4s ease-in-out}
+main{height:100%;display:grid;gap:14px;grid-template-columns:1.5fr 1fr;grid-template-rows:auto minmax(0,1fr);transition:transform 4s ease-in-out}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.col>section{flex:1 1 0}
+.col>.w{flex:1.4 1 0}
+.col>.b{flex:.95 1 0}
+.col>.sc{flex:.9 1 0}
 section{background:var(--panel);border-radius:18px;padding:16px 22px;min-height:0;overflow:hidden;transition:opacity 3s,background 3s}
 h2{font-size:20px;font-weight:700;color:var(--mu);margin-bottom:10px}
 .clock{grid-column:1/3;display:flex;align-items:baseline;gap:28px;background:none;padding:0 6px}
@@ -30,27 +35,33 @@ li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:v
 #cal li:last-child{border-bottom:0}
 #cal li span:last-child{-webkit-line-clamp:1}
 .dd{min-width:122px;flex:none;font-size:22px;color:var(--mu);padding-top:3px}
-.dd.td{color:var(--hi);font-weight:700}
+.dd.td{color:#f0b97a;font-weight:700}
 .ev b{display:inline-block;min-width:80px;color:var(--hi);font-weight:700;margin-right:12px;font-variant-numeric:tabular-nums}
 #news{gap:10px}
 #news li.lead{display:block;border-left:4px solid var(--hi);padding-left:14px}
-.lt,.ld{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-.lt{font-size:27px;line-height:1.3;font-weight:700;-webkit-line-clamp:2}
-.ld{font-size:19px;line-height:1.4;color:var(--mu);margin-top:4px;-webkit-line-clamp:2}
+.lt{font-size:27px;line-height:1.3;font-weight:700}
+.ld{font-size:19px;line-height:1.4;color:var(--mu);margin-top:4px}
 #news li.sm{display:block;font-size:22px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:18px}
 .wx{display:flex;gap:22px;align-items:center}
-.wx .big{font-size:84px;font-weight:700;line-height:1}
-.wx small{color:var(--mu);display:block;font-size:21px}
-.wx b{font-size:28px}
-.days{display:flex;gap:10px;margin-top:14px}
-.days div{flex:1;background:var(--bg);border-radius:12px;padding:8px;text-align:center;font-size:19px;color:var(--mu)}
-.days b{display:block;color:var(--tx);font-size:22px}
+.wx .big{font-size:64px;font-weight:700;line-height:1}
+.wx small{color:var(--mu);display:block;font-size:19px}
+.wx b{font-size:26px}
+.days{display:flex;gap:10px;margin-top:10px}
+.days div{flex:1;background:var(--bg);border-radius:12px;padding:6px 4px;text-align:center;font-size:17px;color:var(--mu)}
+.days b{display:block;color:var(--tx);font-size:19px}
 .dir{margin-bottom:10px}
 .dir h3{font-size:20px;color:var(--mu);font-weight:400;margin-bottom:4px}
 .dir .n{font-size:40px;font-weight:700;font-variant-numeric:tabular-nums}
 .dir .n em{font-style:normal;color:var(--hi);font-size:26px;margin-left:12px}
 .dir .l{color:var(--mu);font-size:20px}
 .err{color:#e9a38a;font-size:20px}
+#tr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+#tr>.err,#tr>.tt{grid-column:1/-1;text-align:left}
+.tt{display:block;font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.tm{display:block;font-size:32px;font-weight:700;color:var(--hi);line-height:1.2}
+#sch{display:grid;gap:8px}
+.pc{background:var(--bg);border-radius:10px;padding:5px 6px;font-size:22px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc i{font-style:normal;color:var(--hi);font-size:15px;margin-right:6px}
 dialog{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(640px,94vw);max-height:92vh;overflow:auto}
 dialog::backdrop{background:#000a}
 label{display:block;font-size:14px;color:var(--mu);margin:12px 0 4px}
@@ -58,16 +69,21 @@ input,textarea,select{width:100%;background:var(--bg);color:var(--tx);border:1px
 textarea{height:70px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
-@media (orientation:portrait){main{grid-template-columns:1fr;grid-template-rows:none;height:auto}.clock{grid-column:1}body{overflow:auto}}
+@media (orientation:portrait){main{grid-template-columns:1fr;grid-template-rows:none;height:auto}.col>section{flex:none}.clock{grid-column:1}body{overflow:auto}}
 </style>
 </head>
 <body>
 <main>
   <section class="clock"><div id="time">--:--</div><div id="date"></div><button id="gear" aria-label="設定">設定</button></section>
-  <section><h2>今日からの予定</h2><ul id="cal"></ul></section>
-  <section><h2 id="wxh">天気</h2><div id="wx"></div></section>
-  <section><h2 id="nwh">ニュース</h2><ul id="news"></ul></section>
-  <section class="board"><h2 id="trh">時刻表</h2><div id="tr"></div></section>
+  <div class="col">
+    <section><h2>今日からの予定</h2><ul id="cal"></ul></section>
+    <section><h2 id="nwh">ニュース</h2><ul id="news"></ul></section>
+  </div>
+  <div class="col">
+    <section class="w"><h2 id="wxh">天気</h2><div id="wx"></div></section>
+    <section class="board b"><h2 id="trh">時刻表</h2><div id="tr"></div></section>
+    <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
+  </div>
 </main>
 
 <dialog id="dlg"><form method="dialog" id="f">
@@ -76,15 +92,19 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
   <label>カレンダーのURL(iCloud公開カレンダー / Google の iCal URL)</label><input name="ics" placeholder="webcal://... または https://...">
   <label>ニュースのRSS URL</label><input name="rss">
   <label>駅名(表示用)</label><input name="station" placeholder="例: 鉄道博物館">
+  <label>方面の名前</label><input name="d1" placeholder="大宮方面">
   <div class="row">
-    <div><label>方面1の名前</label><input name="d1" placeholder="大宮方面"></div>
-    <div><label>方面2の名前</label><input name="d2" placeholder="内宿方面"></div>
+    <div><label>平日の発車時刻(HH:MM を空白か改行で区切る)</label><textarea name="d1w"></textarea></div>
+    <div><label>休日の発車時刻</label><textarea name="d1h"></textarea></div>
   </div>
+  <label>時間割(科目を空白で区切る。1時間目から順に)</label>
   <div class="row">
-    <div><label>方面1 平日(HH:MM を空白か改行で区切る)</label><textarea name="d1w"></textarea></div>
-    <div><label>方面1 休日</label><textarea name="d1h"></textarea></div>
-    <div><label>方面2 平日</label><textarea name="d2w"></textarea></div>
-    <div><label>方面2 休日</label><textarea name="d2h"></textarea></div>
+    <div><label>月曜</label><input name="s1" placeholder="国語 算数 理科 社会 体育"></div>
+    <div><label>火曜</label><input name="s2"></div>
+    <div><label>水曜</label><input name="s3"></div>
+    <div><label>木曜</label><input name="s4"></div>
+    <div><label>金曜</label><input name="s5"></div>
+    <div><label>土曜</label><input name="s6"></div>
   </div>
   <label>ダイヤの切り替え</label>
   <select name="mode"><option value="auto">自動(土日=休日)</option><option value="w">常に平日</option><option value="h">常に休日</option></select>
@@ -92,7 +112,7 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 </form></dialog>
 
 <script>
-const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto"};
+const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto",s1:"",s2:"",s3:"",s4:"",s5:"",s6:""};
 let C;try{C={...DEF,...JSON.parse(localStorage.getItem("sd")||"{}")}}catch{C={...DEF}};for(const k in DEF)if(!C[k])C[k]=DEF[k];C.rss=C.rss.replace("www3.nhk.or.jp/rss/","www.nhk.or.jp/rss/");
 const $=id=>document.getElementById(id);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -100,7 +120,7 @@ const px=u=>"/api/proxy?url="+encodeURIComponent(u.replace(/^webcal:/i,"https:")
 const p2=n=>String(n).padStart(2,"0");
 const WD=["日","月","火","水","木","金","土"];
 
-function tick(){const n=new Date();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
+function tick(){renderSch();const n=new Date();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
  $("date").textContent=`${n.getMonth()+1}月${n.getDate()}日(${WD[n.getDay()]})`;renderTr()}
 
 /* 天気 */
@@ -135,9 +155,11 @@ async function feed(u){const r=await fetch(px(u));const t=await r.text();chk(r,t
  return it.map(i=>{const q=s=>{const e=i.querySelector(s);return e?e.textContent.replace(/<[^>]*>/g,"").trim():""};return{t:q("title"),d:q("description")}})}
 let NW=[],NI=0;
 function drawNews(){const u=$("news"),n=NW.length;if(!n)return;
- const g=k=>NW[(NI+k)%n],lead=el("li","lead");
- lead.append(el("div","lt",g(0).t));if(g(0).d&&g(0).d!=g(0).t)lead.append(el("div","ld",g(0).d));
- const it=[lead];for(let k=1;k<Math.min(3,n);k++)it.push(el("li","sm",g(k).t));
+ const g=k=>NW[(NI+k)%n],lead=el("li","lead"),a=g(0);
+ lead.append(el("div","lt",a.t));if(a.d&&a.d!=a.t)lead.append(el("div","ld",a.d));
+ const H=Math.ceil(a.t.length/19)*35+(a.d?Math.ceil(a.d.length/27)*27+4:0);
+ const m=Math.max(0,Math.min(2,n-1,Math.floor((u.parentElement.clientHeight-80-H)/39)));
+ const it=[lead];for(let k=1;k<=m;k++)it.push(el("li","sm",g(k).t));
  u.replaceChildren(...it)}
 async function news(){const u=$("news");let h="ニュース",ts;
  try{ts=await feed(C.rss)}catch(e){
@@ -190,23 +212,28 @@ async function cal(){const u=$("cal");
 
 /* 時刻表 */
 const tl=s=>(s||"").split(/[\s,、]+/).map(x=>x.match(/^(\d{1,2}):(\d\d)$/)).filter(Boolean).map(m=>+m[1]*60+ +m[2]).sort((a,b)=>a-b);
-function renderTr(){const b=$("tr");$("trh").textContent="時刻表"+(C.station?" "+C.station:"");
+function renderTr(){const b=$("tr");$("trh").textContent="時刻表 "+(C.station||"")+" "+(C.d1||"");
  const n=new Date();let now=n.getHours()*60+n.getMinutes();if(now<240)now+=1440;
  const hol=C.mode=="h"||(C.mode=="auto"&&(n.getDay()==0||n.getDay()==6));
- const out=[];
- for(const k of ["1","2"]){const name=C["d"+k];const ts=tl(C["d"+k+(hol?"h":"w")]);if(!name&&!ts.length)continue;
-  const nx=ts.filter(t=>t>=now).slice(0,3);const d=el("div","dir");d.append(el("h3",null,name||"方面"+k));
-  if(!nx.length){d.append(el("div","n","本日の運転は終了"));}
-  else{const f=el("div","n",p2(Math.floor(nx[0]/60)%24)+":"+p2(nx[0]%60));f.append(el("em",null,nx[0]-now==0?"まもなく":`あと${nx[0]-now}分`));d.append(f);
-   if(nx[1]!=null)d.append(el("div","l","次: "+nx.slice(1).map(t=>p2(Math.floor(t/60)%24)+":"+p2(t%60)).join(" / ")))}
-  out.push(d)}
- if(!out.length)out.push(el("div","err","設定で駅名と時刻を入力してください"));
- b.replaceChildren(...out)}
+ const all=tl(C[hol?"d1h":"d1w"]);
+ if(!all.length){b.replaceChildren(el("div","err","設定で時刻を入力してください"));return}
+ const ts=all.filter(t=>t>=now).slice(0,3);
+ if(!ts.length){b.replaceChildren(el("div","tt","本日の運転は終了"));return}
+ b.replaceChildren(...ts.map(t=>{const r=el("div","tr"),m=t-now;
+  r.append(el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
+let SD=-1;
+function renderSch(){const n=new Date(),d=n.getDay(),b=$("sch");if(d==SD&&b.firstChild)return;SD=d;
+ $("sch-h").textContent="今日の時間割("+WD[d]+")";b.style.gridTemplateColumns="";
+ if(d==0){b.replaceChildren(el("div","err","日曜は時間割がありません"));return}
+ const ps=(C["s"+d]||"").split(/[\s,、，\/]+/).filter(Boolean);
+ if(!ps.length){b.replaceChildren(el("div","err","設定で時間割を入力してください"));return}
+ b.style.gridTemplateColumns=`repeat(${ps.length<=3?ps.length:ps.length<=6?3:4},1fr)`;
+ b.replaceChildren(...ps.map((s,i)=>{const c=el("div","pc");c.append(el("i",null,String(i+1)),document.createTextNode(s));return c}))}
 
 /* 設定 */
 const f=$("f");
 $("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("dlg").showModal()};
-f.onsubmit=()=>{for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
+f.onsubmit=()=>{SD=-1;for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
  localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick()};
 
 /* 画面を消さない */
