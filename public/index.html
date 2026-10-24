@@ -140,7 +140,7 @@ const p2=n=>String(n).padStart(2,"0");
 let OFF=0;const cur=()=>new Date(Date.now()+OFF);
 const WD=["日","月","火","水","木","金","土"];
 
-function tick(){renderSch();const n=cur();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
+function tick(){autoRelease();renderSch();const n=cur();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
  $("date").textContent=`${n.getMonth()+1}月${n.getDate()}日(${WD[n.getDay()]})`+"";
  {const hn=holiday(n);if(hn)$("date").append(" ",el("span","hn",hn));if(OFF)$("date").append(el("span","tst","※テスト中"))}renderTr()}
 
@@ -285,9 +285,14 @@ let wl;async function lock(){try{wl=await navigator.wakeLock.request("screen")}c
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible")lock()});
 document.body.addEventListener("click",lock,{once:true});lock();
 
-function setNight(on){document.body.classList.toggle("night",on);$("nbtn").textContent=on?"☀ 昼":"🌙 夜";try{localStorage.setItem("sd_night",on?"1":"0")}catch{}}
+function setNight(on,keep){document.body.classList.toggle("night",on);$("nbtn").textContent=on?"☀ 昼":"🌙 夜";
+ try{localStorage.setItem("sd_night",on?"1":"0");if(on&&(!keep||!localStorage.getItem("sd_night_at")))localStorage.setItem("sd_night_at",cur().getTime())}catch{}}
+function autoRelease(){if(!document.body.classList.contains("night"))return;
+ const n=cur(),b=new Date(n.getFullYear(),n.getMonth(),n.getDate(),6,0,0);if(n<b)b.setDate(b.getDate()-1);
+ let at=0;try{at=+localStorage.getItem("sd_night_at")||0}catch{}
+ if(at<b.getTime())setNight(false)}
 $("nbtn").onclick=()=>setNight(!document.body.classList.contains("night"));
-{let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv)}
+{let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv,true)}
 setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
 tick();setInterval(tick,1000);
 weather();news();cal();
