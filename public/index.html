@@ -15,18 +15,19 @@
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--tx);font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));overflow:hidden;transition:background 3s,color 3s}
-main{height:100%;display:grid;gap:14px;grid-template-columns:1.5fr 1fr;grid-template-rows:auto minmax(0,1fr);transition:transform 4s ease-in-out}
+main{height:100%;display:grid;gap:14px;grid-template-columns:1.2fr 1fr;grid-template-rows:auto minmax(0,1fr);transition:transform 4s ease-in-out}
 .col{display:flex;flex-direction:column;gap:14px;min-height:0}
 .col>section{flex:1 1 0}
-.col>.w{flex:1.4 1 0}
-.col>.b{flex:.95 1 0}
-.col>.sc{flex:.9 1 0}
+.col>.w{flex:1 1 0}
+.col>.row2{flex:1.3 1 0;display:grid;grid-template-columns:1.2fr 1fr;gap:14px;min-height:0}
+.hn{color:#f0b97a;font-size:.8em;margin-left:.3em}
 section{background:var(--panel);border-radius:18px;padding:16px 22px;min-height:0;overflow:hidden;transition:opacity 3s,background 3s}
 h2{font-size:20px;font-weight:700;color:var(--mu);margin-bottom:10px}
 .clock{grid-column:1/3;display:flex;align-items:baseline;gap:28px;background:none;padding:0 6px}
 #time{font-size:clamp(60px,10.5vw,130px);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
-#date{font-size:clamp(26px,3.6vw,44px);color:var(--mu)}
-#gear{margin-left:auto;align-self:flex-start;background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit}
+#date{font-size:clamp(26px,3.6vw,44px);color:var(--mu);white-space:nowrap}
+.tst{font-size:.5em;color:var(--hi);margin-left:.6em}
+#gear{margin-left:auto;align-self:flex-start;background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit;white-space:nowrap}
 ul{list-style:none;padding:0;display:grid;gap:9px}
 li{display:flex;gap:14px;font-size:22px;line-height:1.3}
 li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
@@ -43,33 +44,37 @@ li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:v
 .ld{font-size:19px;line-height:1.4;color:var(--mu);margin-top:4px}
 #news li.sm{display:block;font-size:22px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:18px}
 .wx{display:flex;gap:22px;align-items:center}
-.wx .big{font-size:64px;font-weight:700;line-height:1}
-.wx small{color:var(--mu);display:block;font-size:19px}
-.wx b{font-size:26px}
+.wx .big{font-size:68px;font-weight:700;line-height:1}
+.wx small{color:var(--mu);display:block;font-size:20px}
+.wx b{font-size:28px}
 .days{display:flex;gap:10px;margin-top:10px}
-.days div{flex:1;background:var(--bg);border-radius:12px;padding:6px 4px;text-align:center;font-size:17px;color:var(--mu)}
-.days b{display:block;color:var(--tx);font-size:19px}
+.days div{flex:1;background:var(--bg);border-radius:12px;padding:8px 4px;text-align:center;font-size:18px;color:var(--mu)}
+.days b{display:block;color:var(--tx);font-size:21px}
 .dir{margin-bottom:10px}
 .dir h3{font-size:20px;color:var(--mu);font-weight:400;margin-bottom:4px}
 .dir .n{font-size:40px;font-weight:700;font-variant-numeric:tabular-nums}
 .dir .n em{font-style:normal;color:var(--hi);font-size:26px;margin-left:12px}
 .dir .l{color:var(--mu);font-size:20px}
 .err{color:#e9a38a;font-size:20px}
-#tr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
-#tr>.err,#tr>.tt{grid-column:1/-1;text-align:left}
-.tt{display:block;font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
-.tm{display:block;font-size:32px;font-weight:700;color:var(--hi);line-height:1.2}
-#sch{display:grid;gap:8px}
-.pc{background:var(--bg);border-radius:10px;padding:5px 6px;font-size:22px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc i{font-style:normal;color:var(--hi);font-size:15px;margin-right:6px}
+.tr{display:flex;align-items:baseline;gap:10px;line-height:1.2;margin-bottom:8px;white-space:nowrap}
+.row2>section{padding:12px 16px}
+.tt{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+.tt.end{font-size:24px}
+.tm{font-size:26px;font-weight:700;color:var(--hi)}
+#sch{display:grid;gap:6px}
+.pc{display:flex;gap:10px;align-items:baseline;background:var(--bg);border-radius:10px;padding:3px 8px;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc.e{color:var(--mu)}
+.pc i{font-style:normal;color:var(--hi);font-size:16px;min-width:36px}
+.off{font-size:26px;line-height:1.4;color:var(--mu)}
 dialog{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(640px,94vw);max-height:92vh;overflow:auto}
 dialog::backdrop{background:#000a}
 label{display:block;font-size:14px;color:var(--mu);margin:12px 0 4px}
 input,textarea,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px}
 textarea{height:70px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button.pr2{margin-top:10px;background:none;color:var(--hi);border:1px solid var(--hi);border-radius:12px;padding:12px 10px;font:inherit;font-weight:700}
 button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
-@media (orientation:portrait){main{grid-template-columns:1fr;grid-template-rows:none;height:auto}.col>section{flex:none}.clock{grid-column:1}body{overflow:auto}}
+@media (orientation:portrait){main{grid-template-columns:1fr;grid-template-rows:none;height:auto}.col>section,.col>.row2{flex:none}.clock{grid-column:1}body{overflow:auto}}
 </style>
 </head>
 <body>
@@ -81,8 +86,10 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
   </div>
   <div class="col">
     <section class="w"><h2 id="wxh">天気</h2><div id="wx"></div></section>
-    <section class="board b"><h2 id="trh">時刻表</h2><div id="tr"></div></section>
-    <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
+    <div class="row2">
+      <section class="board b"><h2 id="trh">時刻表</h2><div id="tr"></div></section>
+      <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
+    </div>
   </div>
 </main>
 
@@ -108,6 +115,9 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
   </div>
   <label>ダイヤの切り替え</label>
   <select name="mode"><option value="auto">自動(土日=休日)</option><option value="w">常に平日</option><option value="h">常に休日</option></select>
+  <label>動作確認用: 日時を変更(ページを開き直すと元に戻ります。天気とニュースは実際のまま)</label>
+  <input type="datetime-local" id="tt">
+  <div class="row"><button type="button" class="pr2" id="tset">この日時にする</button><button type="button" class="pr2" id="treset">元に戻す</button></div>
   <button class="pr">保存して反映</button>
 </form></dialog>
 
@@ -118,10 +128,12 @@ const $=id=>document.getElementById(id);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const px=u=>"/api/proxy?url="+encodeURIComponent(u.replace(/^webcal:/i,"https:"));
 const p2=n=>String(n).padStart(2,"0");
+let OFF=0;const cur=()=>new Date(Date.now()+OFF);
 const WD=["日","月","火","水","木","金","土"];
 
-function tick(){renderSch();const n=new Date();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
- $("date").textContent=`${n.getMonth()+1}月${n.getDate()}日(${WD[n.getDay()]})`;renderTr()}
+function tick(){renderSch();const n=cur();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
+ $("date").textContent=`${n.getMonth()+1}月${n.getDate()}日(${WD[n.getDay()]})`+"";
+ {const hn=holiday(n);if(hn)$("date").append(" ",el("span","hn",hn));if(OFF)$("date").append(el("span","tst","※テスト中"))}renderTr()}
 
 /* 天気 */
 const WC=c=>c==0?"快晴":c<=2?"晴れ":c==3?"くもり":c<=48?"霧":c<=57?"霧雨":c<=67?"雨":c<=77?"雪":c<=82?"にわか雨":c<=86?"にわか雪":"雷雨";
@@ -172,7 +184,7 @@ function pd(v,p){const m=v.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)
  const d=m[7]?new Date(Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))):new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
  return{d,allDay}}
 let EV=[],EVN=0;
-function drawCal(){const u=$("cal"),now=new Date();
+function drawCal(){const u=$("cal"),now=cur();
  if(!EV.length&&!EVN&&!C.ics)return;
  const L=EV.filter(e=>e.allDay||e.end>now);
  if(!L.length){u.replaceChildren(el("li",null,EV.length?"残りの予定はありません":"今後7日間の予定はありません(カレンダー全体では"+EVN+"件)"));return}
@@ -190,7 +202,7 @@ async function cal(){const u=$("cal");
   chk(r,raw);
   if(!raw.includes("BEGIN:VCALENDAR"))throw Error("カレンダーの形式ではありません。URLを確認してください");
   const t=raw.replace(/\r?\n[ \t]/g,"");
-  const from=new Date();from.setHours(0,0,0,0);const to=new Date(from.getTime()+7*864e5);
+  const from=cur();from.setHours(0,0,0,0);const to=new Date(from.getTime()+7*864e5);
   const ev=[];
   for(const blk of t.split("BEGIN:VEVENT").slice(1)){
    const g=n=>{const m=blk.match(new RegExp("^"+n+"([;:][^\\r\\n]*)$","m"));return m?m[1]:null};
@@ -212,28 +224,45 @@ async function cal(){const u=$("cal");
 
 /* 時刻表 */
 const tl=s=>(s||"").split(/[\s,、]+/).map(x=>x.match(/^(\d{1,2}):(\d\d)$/)).filter(Boolean).map(m=>+m[1]*60+ +m[2]).sort((a,b)=>a-b);
-function renderTr(){const b=$("tr");$("trh").textContent="時刻表 "+(C.station||"")+" "+(C.d1||"");
- const n=new Date();let now=n.getHours()*60+n.getMinutes();if(now<240)now+=1440;
- const hol=C.mode=="h"||(C.mode=="auto"&&(n.getDay()==0||n.getDay()==6));
+const HC={};
+const nth=(y,m,n)=>1+(8-new Date(y,m,1).getDay())%7+(n-1)*7;
+function hmap(y){if(HC[y])return HC[y];
+ const H={},k=(m,d)=>m+"-"+d,add=(m,d,n)=>{H[k(m,d)]=n},yy=y-1980,ex=Math.floor(yy/4);
+ add(1,1,"元日");add(1,nth(y,0,2),"成人の日");add(2,11,"建国記念の日");add(2,23,"天皇誕生日");
+ add(3,Math.floor(20.8431+.242194*yy-ex),"春分の日");add(4,29,"昭和の日");add(5,3,"憲法記念日");add(5,4,"みどりの日");add(5,5,"こどもの日");
+ add(7,nth(y,6,3),"海の日");add(8,11,"山の日");add(9,nth(y,8,3),"敬老の日");add(9,Math.floor(23.2488+.242194*yy-ex),"秋分の日");
+ add(10,nth(y,9,2),"スポーツの日");add(11,3,"文化の日");add(11,23,"勤労感謝の日");
+ const has=d=>H[k(d.getMonth()+1,d.getDate())]!=null,nx=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+ const ds=Object.keys(H).map(s=>{const[m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}).sort((a,b)=>a-b);
+ for(const d of ds){const a=nx(d,1);if(!has(a)&&has(nx(d,2))&&a.getDay()!=0&&a.getFullYear()==y)H[k(a.getMonth()+1,a.getDate())]="国民の休日"}
+ for(const d of ds)if(d.getDay()==0){let a=nx(d,1);while(has(a))a=nx(a,1);if(a.getFullYear()==y)H[k(a.getMonth()+1,a.getDate())]="振替休日"}
+ return HC[y]=H}
+const holiday=d=>hmap(d.getFullYear())[(d.getMonth()+1)+"-"+d.getDate()]||null;
+const newYear=d=>(d.getMonth()==11&&d.getDate()>=30)||(d.getMonth()==0&&d.getDate()<=3);
+function renderTr(){const b=$("tr");$("trh").textContent="時刻表 "+(C.d1||"");
+ const n=cur();let now=n.getHours()*60+n.getMinutes();if(now<240)now+=1440;
+ const hol=C.mode=="h"||(C.mode=="auto"&&(n.getDay()==0||n.getDay()==6||holiday(n)||newYear(n)));
  const all=tl(C[hol?"d1h":"d1w"]);
  if(!all.length){b.replaceChildren(el("div","err","設定で時刻を入力してください"));return}
  const ts=all.filter(t=>t>=now).slice(0,3);
- if(!ts.length){b.replaceChildren(el("div","tt","本日の運転は終了"));return}
+ if(!ts.length){b.replaceChildren(el("div","tt end","本日の運転は終了"));return}
  b.replaceChildren(...ts.map(t=>{const r=el("div","tr"),m=t-now;
   r.append(el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
-let SD=-1;
-function renderSch(){const n=new Date(),d=n.getDay(),b=$("sch");if(d==SD&&b.firstChild)return;SD=d;
- $("sch-h").textContent="今日の時間割("+WD[d]+")";b.style.gridTemplateColumns="";
- if(d==0){b.replaceChildren(el("div","err","日曜は時間割がありません"));return}
+let SD="";
+function renderSch(){const n=cur(),d=n.getDay(),b=$("sch"),key=n.toDateString();if(key==SD&&b.firstChild)return;SD=key;
+ $("sch-h").textContent="時間割("+WD[d]+")";
+ if(d==0||holiday(n)){b.replaceChildren(el("div","off","今日は学校はありません"));return}
  const ps=(C["s"+d]||"").split(/[\s,、，\/]+/).filter(Boolean);
  if(!ps.length){b.replaceChildren(el("div","err","設定で時間割を入力してください"));return}
- b.style.gridTemplateColumns=`repeat(${ps.length<=3?ps.length:ps.length<=6?3:4},1fr)`;
- b.replaceChildren(...ps.map((s,i)=>{const c=el("div","pc");c.append(el("i",null,String(i+1)),document.createTextNode(s));return c}))}
+ b.replaceChildren(...Array.from({length:d==6?4:6},(_,i)=>{const c=el("div","pc"+(ps[i]?"":" e"));c.append(el("i",null,(i+1)+"限"),document.createTextNode(ps[i]||"—"));return c}))}
 
 /* 設定 */
 const f=$("f");
-$("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("dlg").showModal()};
-f.onsubmit=()=>{SD=-1;for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
+const fmt=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+$("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("tt").value=fmt(cur());$("dlg").showModal()};
+$("tset").onclick=()=>{const v=$("tt").value;if(!v)return;OFF=new Date(v).getTime()-Date.now();SD="";$("dlg").close();tick();cal()};
+$("treset").onclick=()=>{OFF=0;SD="";$("dlg").close();tick();cal()};
+f.onsubmit=()=>{SD="";for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
  localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick()};
 
 /* 画面を消さない */
