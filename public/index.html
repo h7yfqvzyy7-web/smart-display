@@ -27,7 +27,8 @@ h2{font-size:20px;font-weight:700;color:var(--mu);margin-bottom:10px}
 #time{font-size:clamp(60px,10.5vw,130px);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
 #date{font-size:clamp(26px,3.6vw,44px);color:var(--mu);white-space:nowrap}
 .tst{font-size:.5em;color:var(--hi);margin-left:.6em}
-#gear{margin-left:auto;align-self:flex-start;background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit;white-space:nowrap}
+.tools{margin-left:auto;align-self:flex-start;display:flex;gap:10px}
+#gear,#nbtn{background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit;white-space:nowrap}
 ul{list-style:none;padding:0;display:grid;gap:9px}
 li{display:flex;gap:14px;font-size:22px;line-height:1.3}
 li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
@@ -37,6 +38,12 @@ li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:v
 #cal li span:last-child{-webkit-line-clamp:1}
 .dd{min-width:122px;flex:none;font-size:22px;color:var(--mu);padding-top:3px}
 li.hol .ev,li.hol .ev b{color:var(--hol)}
+body.night{--bg:#000;--panel:#0a0705;--line:#1c130a;--tx:#855a2c;--mu:#52371d;--hi:#7a4f1e;--hol:#8a4a3c}
+body.night .dd.td{color:#a8742f}
+body.night .days div,body.night .pc{background:#000}
+body.night #gear,body.night #nbtn{opacity:.5}
+body.night .tst{color:var(--hi)}
+body.night dialog{--panel:#1a2533;--bg:#121a24;--line:#2a3a4d;--tx:#eaf0f5;--mu:#8fa3b5;--hi:#7fd1c7}
 .dd.td{color:#f0b97a;font-weight:700}
 .ev b{display:inline-block;min-width:80px;color:var(--hi);font-weight:700;margin-right:12px;font-variant-numeric:tabular-nums}
 #news{gap:10px}
@@ -81,7 +88,7 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 </head>
 <body>
 <main>
-  <section class="clock"><div id="time">--:--</div><div id="date"></div><button id="gear" aria-label="設定">設定</button></section>
+  <section class="clock"><div id="time">--:--</div><div id="date"></div><div class="tools"><button id="nbtn" aria-label="夜モード">🌙 夜</button><button id="gear" aria-label="設定">設定</button></div></section>
   <div class="col">
     <section><h2>今日からの予定</h2><ul id="cal"></ul></section>
     <section><h2 id="nwh">ニュース</h2><ul id="news"></ul></section>
@@ -189,7 +196,7 @@ let EV=[],EVN=0;
 function drawCal(){const u=$("cal"),now=cur(),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
  const hs=[];for(let i=0;i<7;i++){const d=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+i),h=holiday(d);if(h)hs.push({d,allDay:true,hol:true,sum:h})}
  if(!C.ics&&!hs.length)return;
- const L=EV.filter(e=>e.allDay||e.end>now).concat(hs).sort((a,b)=>a.d-b.d);
+ const L=EV.filter(e=>e.allDay||e.end>now).concat(hs).sort((a,b)=>a.d-b.d||(b.hol?1:0)-(a.hol?1:0));
  if(!L.length){u.replaceChildren(el("li",null,EV.length?"残りの予定はありません":"今後7日間の予定はありません"));return}
  let last="";
  u.replaceChildren(...L.slice(0,5).map(e=>{const l=el("li",e.hol?"hol":"");
@@ -278,6 +285,9 @@ let wl;async function lock(){try{wl=await navigator.wakeLock.request("screen")}c
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible")lock()});
 document.body.addEventListener("click",lock,{once:true});lock();
 
+function setNight(on){document.body.classList.toggle("night",on);$("nbtn").textContent=on?"☀ 昼":"🌙 夜";try{localStorage.setItem("sd_night",on?"1":"0")}catch{}}
+$("nbtn").onclick=()=>setNight(!document.body.classList.contains("night"));
+{let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv)}
 setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
 tick();setInterval(tick,1000);
 weather();news();cal();
