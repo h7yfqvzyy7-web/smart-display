@@ -131,7 +131,11 @@ function pd(v,p){const m=v.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)
 async function cal(){const u=$("cal");
  if(!C.ics){u.replaceChildren(el("li","err","設定でカレンダーのURLを入力してください"));return}
  try{
-  const t=(await(await fetch(px(C.ics))).text()).replace(/\r?\n[ \t]/g,"");
+  const r=await fetch(px(C.ics));const raw=await r.text();
+  if(/^\s*(<!doctype html|<html)/i.test(raw))throw Error("中継機能が動いていません(functionsフォルダの場所を確認)");
+  if(!r.ok)throw Error("カレンダーの取得に失敗しました("+r.status+")。URLを確認してください");
+  if(!raw.includes("BEGIN:VCALENDAR"))throw Error("カレンダーの形式ではありません。URLを確認してください");
+  const t=raw.replace(/\r?\n[ \t]/g,"");
   const from=new Date();from.setHours(0,0,0,0);const to=new Date(from.getTime()+7*864e5);
   const ev=[];
   for(const blk of t.split("BEGIN:VEVENT").slice(1)){
@@ -149,11 +153,11 @@ async function cal(){const u=$("cal");
     starts=starts.slice(1)}
    for(const d of starts)if(d>=from&&d<to)ev.push({d,allDay:s.allDay,sum})}
   ev.sort((a,b)=>a.d-b.d);
-  if(!ev.length){u.replaceChildren(el("li",null,"今後7日間の予定はありません"));return}
+  if(!ev.length){u.replaceChildren(el("li",null,"今後7日間の予定はありません(カレンダー全体では"+(t.split("BEGIN:VEVENT").length-1)+"件)"));return}
   u.replaceChildren(...ev.slice(0,6).map(e=>{const l=el("li"),n=new Date();
    const day=e.d.toDateString()==n.toDateString()?"今日":`${e.d.getMonth()+1}/${e.d.getDate()}(${WD[e.d.getDay()]})`;
    l.append(el("span","t",day+(e.allDay?"":" "+p2(e.d.getHours())+":"+p2(e.d.getMinutes()))),el("span",null,e.sum));return l}));
- }catch(e){u.replaceChildren(el("li","err","予定を取得できません。URLを確認してください"))}}
+ }catch(e){u.replaceChildren(el("li","err",e.message||"予定を取得できません"))}}
 
 /* 時刻表 */
 const tl=s=>(s||"").split(/[\s,、]+/).map(x=>x.match(/^(\d{1,2}):(\d\d)$/)).filter(Boolean).map(m=>+m[1]*60+ +m[2]).sort((a,b)=>a-b);
