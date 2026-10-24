@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ディスプレイ">
+<title>スマートディスプレイ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121a24;--panel:#1a2533;--line:#2a3a4d;--tx:#eaf0f5;--mu:#8fa3b5;--hi:#7fd1c7;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));overflow:hidden}
+main{height:100%;display:grid;gap:14px;grid-template-columns:1.25fr 1fr;grid-template-rows:auto 1fr 1fr}
+section{background:var(--panel);border-radius:18px;padding:18px 22px;min-height:0;overflow:hidden}
+h2{font-size:15px;font-weight:700;color:var(--mu);margin-bottom:10px}
+.clock{grid-column:1/3;display:flex;align-items:baseline;gap:28px;background:none;padding:0 6px}
+#time{font-size:clamp(72px,13vw,150px);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+#date{font-size:clamp(20px,3vw,34px);color:var(--mu)}
+#gear{margin-left:auto;align-self:flex-start;background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit}
+ul{list-style:none;padding:0;display:grid;gap:9px}
+li{display:flex;gap:12px;font-size:18px;line-height:1.35}
+li .t{color:var(--hi);min-width:84px;font-variant-numeric:tabular-nums}
+.wx{display:flex;gap:22px;align-items:center}
+.wx .big{font-size:64px;font-weight:700;line-height:1}
+.wx small{color:var(--mu);display:block;font-size:16px}
+.days{display:flex;gap:10px;margin-top:14px}
+.days div{flex:1;background:var(--bg);border-radius:12px;padding:8px;text-align:center;font-size:14px;color:var(--mu)}
+.days b{display:block;color:var(--tx);font-size:16px}
+.dir{margin-bottom:10px}
+.dir h3{font-size:15px;color:var(--mu);font-weight:400;margin-bottom:4px}
+.dir .n{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.dir .n em{font-style:normal;color:var(--hi);font-size:20px;margin-left:10px}
+.dir .l{color:var(--mu);font-size:15px}
+.err{color:#e9a38a;font-size:15px}
+dialog{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(640px,94vw);max-height:92vh;overflow:auto}
+dialog::backdrop{background:#000a}
+label{display:block;font-size:14px;color:var(--mu);margin:12px 0 4px}
+input,textarea,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px}
+textarea{height:70px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
+@media (max-width:760px){main{grid-template-columns:1fr;grid-template-rows:auto;overflow:auto}.clock{grid-column:1}body{overflow:auto}}
+</style>
+</head>
+<body>
+<main>
+  <section class="clock"><div id="time">--:--</div><div id="date"></div><button id="gear" aria-label="設定">設定</button></section>
+  <section><h2>今日からの予定</h2><ul id="cal"></ul></section>
+  <section><h2 id="wxh">天気</h2><div id="wx"></div></section>
+  <section><h2>ニュース</h2><ul id="news"></ul></section>
+  <section><h2 id="trh">時刻表</h2><div id="tr"></div></section>
+</main>
+
+<dialog id="dlg"><form method="dialog" id="f">
+  <h2>設定</h2>
+  <label>天気の場所(地名)</label><input name="place" placeholder="例: 横浜">
+  <label>カレンダーのURL(iCloud公開カレンダー / Google の iCal URL)</label><input name="ics" placeholder="webcal://... または https://...">
+  <label>ニュースのRSS URL</label><input name="rss">
+  <label>駅名(表示用)</label><input name="station" placeholder="例: 鉄道博物館">
+  <div class="row">
+    <div><label>方面1の名前</label><input name="d1" placeholder="大宮方面"></div>
+    <div><label>方面2の名前</label><input name="d2" placeholder="内宿方面"></div>
+  </div>
+  <div class="row">
+    <div><label>方面1 平日(HH:MM を空白か改行で区切る)</label><textarea name="d1w"></textarea></div>
+    <div><label>方面1 休日</label><textarea name="d1h"></textarea></div>
+    <div><label>方面2 平日</label><textarea name="d2w"></textarea></div>
+    <div><label>方面2 休日</label><textarea name="d2h"></textarea></div>
+  </div>
+  <label>ダイヤの切り替え</label>
+  <select name="mode"><option value="auto">自動(土日=休日)</option><option value="w">常に平日</option><option value="h">常に休日</option></select>
+  <button class="pr">保存して反映</button>
+</form></dialog>
+
+<script>
+const DEF={place:"東京",ics:"",rss:"https://www3.nhk.or.jp/rss/news/cat0.xml",station:"",d1:"",d2:"",d1w:"",d1h:"",d2w:"",d2h:"",mode:"auto"};
+let C;try{C={...DEF,...JSON.parse(localStorage.getItem("sd")||"{}")}}catch{C={...DEF}}
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const px=u=>"/api/proxy?url="+encodeURIComponent(u.replace(/^webcal:/i,"https:"));
+const p2=n=>String(n).padStart(2,"0");
+const WD=["日","月","火","水","木","金","土"];
+
+function tick(){const n=new Date();$("time").textContent=p2(n.getHours())+":"+p2(n.getMinutes());
+ $("date").textContent=`${n.getMonth()+1}月${n.getDate()}日(${WD[n.getDay()]})`;renderTr()}
+
+/* 天気 */
+const WC=c=>c==0?"快晴":c<=2?"晴れ":c==3?"くもり":c<=48?"霧":c<=57?"霧雨":c<=67?"雨":c<=77?"雪":c<=82?"にわか雨":c<=86?"にわか雪":"雷雨";
+async function weather(){const b=$("wx");
+ try{
+  const g=await(await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&language=ja&name="+encodeURIComponent(C.place))).json();
+  const r=g.results&&g.results[0];if(!r)throw Error("場所が見つかりません。設定で地名を変えてください");
+  $("wxh").textContent="天気 "+r.name;
+  const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${r.latitude}&longitude=${r.longitude}&timezone=auto&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=4`)).json();
+  b.replaceChildren();
+  const top=el("div","wx"),a=el("div");a.append(el("div","big",Math.round(w.current.temperature_2m)+"°"));
+  const s=el("div");s.append(el("b",null,WC(w.current.weather_code)));
+  const d=w.daily,m=el("small",null,`最高 ${Math.round(d.temperature_2m_max[0])}° / 最低 ${Math.round(d.temperature_2m_min[0])}° / 降水 ${d.precipitation_probability_max[0]}%`);
+  s.append(m);top.append(a,s);b.append(top);
+  const ds=el("div","days");
+  for(let i=1;i<4;i++){const x=el("div");const dt=new Date(d.time[i]+"T00:00");
+   x.append(document.createTextNode(`${dt.getMonth()+1}/${dt.getDate()}(${WD[dt.getDay()]})`),el("b",null,WC(d.weather_code[i])),document.createTextNode(`${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°`));ds.append(x)}
+  b.append(ds);
+ }catch(e){b.replaceChildren(el("div","err",e.message))}}
+
+/* RSS */
+async function news(){const u=$("news");
+ try{const t=await(await fetch(px(C.rss))).text();
+  const x=new DOMParser().parseFromString(t,"text/xml");
+  const it=[...x.querySelectorAll("item")].slice(0,7);
+  if(!it.length)throw Error("ニュースを取得できません");
+  u.replaceChildren(...it.map(i=>{const l=el("li");l.append(el("span",null,i.querySelector("title").textContent));return l}));
+ }catch(e){u.replaceChildren(el("li","err",e.message+"(設定のRSS URLを確認)"))}}
+
+/* カレンダー(ICS) */
+function pd(v,p){const m=v.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)?)?$/);if(!m)return null;
+ const allDay=m[4]==null;
+ const d=m[7]?new Date(Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))):new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
+ return{d,allDay}}
+async function cal(){const u=$("cal");
+ if(!C.ics){u.replaceChildren(el("li","err","設定でカレンダーのURLを入力してください"));return}
+ try{
+  const t=(await(await fetch(px(C.ics))).text()).replace(/\r?\n[ \t]/g,"");
+  const from=new Date();from.setHours(0,0,0,0);const to=new Date(from.getTime()+7*864e5);
+  const ev=[];
+  for(const blk of t.split("BEGIN:VEVENT").slice(1)){
+   const g=n=>{const m=blk.match(new RegExp("^"+n+"([;:][^\\r\\n]*)$","m"));return m?m[1]:null};
+   const ds=g("DTSTART");if(!ds)continue;
+   const s=pd(ds.slice(ds.lastIndexOf(":")+1).trim());if(!s)continue;
+   const sum=(g("SUMMARY")||"").replace(/^[^:]*:/,"").replace(/\\,/g,",").replace(/\\n/g," ")||"(無題)";
+   const rr=g("RRULE");let starts=[s.d];
+   if(rr){const f=(rr.match(/FREQ=(\w+)/)||[])[1],iv=+((rr.match(/INTERVAL=(\d+)/)||[])[1]||1);
+    const un=(rr.match(/UNTIL=(\d{8})/)||[])[1];const lim=un?pd(un).d:null;
+    let c=new Date(s.d);const step=f=="DAILY"?iv*864e5:f=="WEEKLY"?iv*7*864e5:0;
+    if(step&&c<from)c=new Date(c.getTime()+Math.floor((from-c)/step)*step);
+    for(let k=0;k<400&&c<to;k++){if(c>=from&&(!lim||c<=lim))starts.push(new Date(c));
+     if(step)c=new Date(c.getTime()+step);else if(f=="MONTHLY")c.setMonth(c.getMonth()+iv);else if(f=="YEARLY")c.setFullYear(c.getFullYear()+iv);else break}
+    starts=starts.slice(1)}
+   for(const d of starts)if(d>=from&&d<to)ev.push({d,allDay:s.allDay,sum})}
+  ev.sort((a,b)=>a.d-b.d);
+  if(!ev.length){u.replaceChildren(el("li",null,"今後7日間の予定はありません"));return}
+  u.replaceChildren(...ev.slice(0,8).map(e=>{const l=el("li"),n=new Date();
+   const day=e.d.toDateString()==n.toDateString()?"今日":`${e.d.getMonth()+1}/${e.d.getDate()}(${WD[e.d.getDay()]})`;
+   l.append(el("span","t",day+(e.allDay?"":" "+p2(e.d.getHours())+":"+p2(e.d.getMinutes()))),el("span",null,e.sum));return l}));
+ }catch(e){u.replaceChildren(el("li","err","予定を取得できません。URLを確認してください"))}}
+
+/* 時刻表 */
+const tl=s=>(s||"").split(/[\s,、]+/).map(x=>x.match(/^(\d{1,2}):(\d\d)$/)).filter(Boolean).map(m=>+m[1]*60+ +m[2]).sort((a,b)=>a-b);
+function renderTr(){const b=$("tr");$("trh").textContent="時刻表"+(C.station?" "+C.station:"");
+ const n=new Date(),now=n.getHours()*60+n.getMinutes();
+ const hol=C.mode=="h"||(C.mode=="auto"&&(n.getDay()==0||n.getDay()==6));
+ const out=[];
+ for(const k of ["1","2"]){const name=C["d"+k];const ts=tl(C["d"+k+(hol?"h":"w")]);if(!name&&!ts.length)continue;
+  const nx=ts.filter(t=>t>=now).slice(0,3);const d=el("div","dir");d.append(el("h3",null,name||"方面"+k));
+  if(!nx.length){d.append(el("div","n","本日の運転は終了"));}
+  else{const f=el("div","n",p2(Math.floor(nx[0]/60))+":"+p2(nx[0]%60));f.append(el("em",null,nx[0]-now==0?"まもなく":`あと${nx[0]-now}分`));d.append(f);
+   if(nx[1]!=null)d.append(el("div","l","次: "+nx.slice(1).map(t=>p2(Math.floor(t/60))+":"+p2(t%60)).join(" / ")))}
+  out.push(d)}
+ if(!out.length)out.push(el("div","err","設定で駅名と時刻を入力してください"));
+ b.replaceChildren(...out,el("div","l",hol?"休日ダイヤ":"平日ダイヤ"))}
+
+/* 設定 */
+const f=$("f");
+$("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("dlg").showModal()};
+f.onsubmit=()=>{for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
+ localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick()};
+
+/* 画面を消さない */
+let wl;async function lock(){try{wl=await navigator.wakeLock.request("screen")}catch{}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible")lock()});
+document.body.addEventListener("click",lock,{once:true});lock();
+
+tick();setInterval(tick,5000);
+weather();news();cal();
+setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);
+</script>
+</body>
+</html>
