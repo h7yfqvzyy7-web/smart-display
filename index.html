@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ディスプレイ">
+<title>スマートディスプレイ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121a24;--panel:#1a2533;--line:#2a3a4d;--tx:#eaf0f5;--mu:#8fa3b5;--hi:#7fd1c7;--hol:#f28b9b;--z:1.15;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--tx);font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));overflow-x:hidden;transition:background 3s,color 3s}
+main{display:grid;gap:14px;grid-template-columns:1.1fr 1fr;transition:transform 4s ease-in-out}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.col>section,.col>.row2{flex:none}
+.col>section:last-child,.col>.row2{flex:1 0 auto}
+.col>.row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
+.hn{color:var(--hol);font-size:.8em;margin-left:.3em}
+section{background:var(--panel);border-radius:18px;padding:16px 22px;min-height:0;overflow:hidden;transition:opacity 3s,background 3s}
+h2{font-size:calc(20px*var(--z));font-weight:700;color:var(--mu);margin-bottom:10px}
+.clock{grid-column:1/3;display:flex;align-items:baseline;gap:28px;background:none;padding:0 6px}
+#time{font-size:calc(clamp(60px,10.5vw,130px)*var(--z));font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+#date{font-size:calc(clamp(26px,3.6vw,44px)*var(--z));color:var(--mu);white-space:nowrap}
+.tst{font-size:.5em;color:var(--hi);margin-left:.6em}
+.tools{margin-left:auto;align-self:flex-start;display:flex;gap:10px}
+#gear,#nbtn{background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit;white-space:nowrap}
+ul{list-style:none;padding:0;display:grid;gap:9px}
+li{display:flex;gap:14px;font-size:calc(22px*var(--z));line-height:1.3}
+li span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
+#cal{gap:0}
+#cal li{font-size:calc(26px*var(--z));padding:6px 0;border-bottom:1px solid var(--line)}
+#cal li:last-child{border-bottom:0}
+#cal li span:last-child{-webkit-line-clamp:1}
+.dd{min-width:calc(122px*var(--z));flex:none;font-size:calc(22px*var(--z));color:var(--mu);padding-top:3px}
+li.hol .ev,li.hol .ev b{color:var(--hol)}
+body.night{--bg:#000;--panel:#0a0705;--line:#1c130a;--tx:#855a2c;--mu:#52371d;--hi:#7a4f1e;--hol:#8a4a3c}
+body.night .dd.td{color:#a8742f}
+body.night .days div,body.night .pc{background:#000}
+body.night #gear,body.night #nbtn{opacity:.5}
+body.night .tst{color:var(--hi)}
+body.night dialog{--panel:#1a2533;--bg:#121a24;--line:#2a3a4d;--tx:#eaf0f5;--mu:#8fa3b5;--hi:#7fd1c7}
+.dd.td{color:#f0b97a;font-weight:700}
+.ev b{display:inline-block;min-width:calc(80px*var(--z));color:var(--hi);font-weight:700;margin-right:12px;font-variant-numeric:tabular-nums}
+#news{gap:10px}
+#news li.lead{display:block;border-left:4px solid var(--hi);padding-left:14px}
+.lt{font-size:calc(27px*var(--z));line-height:1.3;font-weight:700}
+.ld{font-size:calc(19px*var(--z));line-height:1.4;color:var(--mu);margin-top:4px}
+#news li.sm{display:block;font-size:calc(22px*var(--z));color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:18px}
+.wx{display:flex;gap:22px;align-items:center}
+.wx .big{font-size:calc(68px*var(--z));font-weight:700;line-height:1}
+.wx small{color:var(--mu);display:block;font-size:calc(20px*var(--z))}
+.wx b{font-size:calc(28px*var(--z))}
+.days{display:flex;gap:10px;margin-top:10px}
+.days div{flex:1;background:var(--bg);border-radius:12px;padding:8px 4px;text-align:center;font-size:calc(18px*var(--z));color:var(--mu)}
+.days b{display:block;color:var(--tx);font-size:calc(21px*var(--z))}
+.dir{margin-bottom:10px}
+.dir h3{font-size:calc(20px*var(--z));color:var(--mu);font-weight:400;margin-bottom:4px}
+.dir .n{font-size:calc(40px*var(--z));font-weight:700;font-variant-numeric:tabular-nums}
+.dir .n em{font-style:normal;color:var(--hi);font-size:calc(26px*var(--z));margin-left:12px}
+.dir .l{color:var(--mu);font-size:calc(20px*var(--z))}
+.err{color:#e9a38a;font-size:calc(20px*var(--z))}
+.tr{display:flex;align-items:baseline;gap:10px;line-height:1.2;margin-bottom:8px;white-space:nowrap}
+.row2>section{padding:12px 16px}
+.tt{font-size:calc(34px*var(--z));font-weight:700;font-variant-numeric:tabular-nums}
+.tt.end{font-size:calc(24px*var(--z))}
+.tm{font-size:calc(26px*var(--z));font-weight:700;color:var(--hi)}
+#sch{display:grid;gap:6px}
+.pc{display:flex;gap:10px;align-items:baseline;background:var(--bg);border-radius:10px;padding:3px 8px;font-size:calc(20px*var(--z));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc.e{color:var(--mu)}
+.sc h2{font-size:calc(17px*var(--z))}
+.pc i{font-style:normal;color:var(--hi);font-size:calc(16px*var(--z));min-width:calc(36px*var(--z))}
+.off{font-size:calc(26px*var(--z));line-height:1.4;color:var(--mu)}
+dialog{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:22px;width:min(640px,94vw);max-height:92vh;overflow:auto}
+dialog::backdrop{background:#000a}
+label{display:block;font-size:14px;color:var(--mu);margin:12px 0 4px}
+input,textarea,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px}
+textarea{height:70px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button.pr2{margin-top:10px;background:none;color:var(--hi);border:1px solid var(--hi);border-radius:12px;padding:12px 10px;font:inherit;font-weight:700}
+button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
+@media (orientation:portrait){main{grid-template-columns:1fr}.clock{grid-column:1}.col>.row2{flex:none}}
+</style>
+</head>
+<body>
+<main>
+  <section class="clock"><div id="time">--:--</div><div id="date"></div><div class="tools"><button id="nbtn" aria-label="夜モード">🌙 夜</button><button id="gear" aria-label="設定">設定</button></div></section>
+  <div class="col">
+    <section><h2>今日からの予定</h2><ul id="cal"></ul></section>
+    <section><h2 id="nwh">ニュース</h2><ul id="news"></ul></section>
+  </div>
+  <div class="col">
+    <section class="w"><h2 id="wxh">天気</h2><div id="wx"></div></section>
+    <div class="row2">
+      <section class="board b"><h2 id="trh">時刻表</h2><div id="tr"></div></section>
+      <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
+    </div>
+  </div>
+</main>
+
+<dialog id="dlg"><form method="dialog" id="f">
+  <h2>設定</h2>
+  <label>天気の場所(地名)</label><input name="place" placeholder="例: 横浜">
+  <label>カレンダーのURL(iCloud公開カレンダー / Google の iCal URL)</label><input name="ics" placeholder="webcal://... または https://...">
+  <label>ニュースのRSS URL</label><input name="rss">
+  <label>駅名(表示用)</label><input name="station" placeholder="例: 鉄道博物館">
+  <label>方面の名前</label><input name="d1" placeholder="大宮方面">
+  <div class="row">
+    <div><label>平日の発車時刻(HH:MM を空白か改行で区切る)</label><textarea name="d1w"></textarea></div>
+    <div><label>休日の発車時刻</label><textarea name="d1h"></textarea></div>
+  </div>
+  <label>時間割(科目を空白で区切る。1時間目から順に)</label>
+  <div class="row">
+    <div><label>月曜</label><input name="s1" placeholder="国語 算数 理科 社会 体育"></div>
+    <div><label>火曜</label><input name="s2"></div>
+    <div><label>水曜</label><input name="s3"></div>
+    <div><label>木曜</label><input name="s4"></div>
+    <div><label>金曜</label><input name="s5"></div>
+    <div><label>土曜</label><input name="s6"></div>
+  </div>
+  <label>文字の大きさ <span id="zv"></span></label>
+  <input type="range" name="z" min="0.8" max="1.6" step="0.05">
+  <label>ダイヤの切り替え</label>
+  <select name="mode"><option value="auto">自動(土日=休日)</option><option value="w">常に平日</option><option value="h">常に休日</option></select>
+  <label>動作確認用: 日時を変更(ページを開き直すと元に戻ります。天気とニュースは実際のまま)</label>
+  <input type="datetime-local" id="tt">
+  <div class="row"><button type="button" class="pr2" id="tset">この日時にする</button><button type="button" class="pr2" id="treset">元に戻す</button></div>
+  <button class="pr">保存して反映</button>
+</form></dialog>
+
+<script>
+const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto",s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",z:"1.15"};
+let C;try{C={...DEF,...JSON.parse(localStorage.getItem("sd")||"{}")}}catch{C={...DEF}};for(const k in DEF)if(!C[k])C[k]=DEF[k];C.rss=C.rss.replace("www3.nhk.or.jp/rss/","www.nhk.or.jp/rss/");
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const px=u=>"/api/proxy?url="+encodeURIComponent(u.replace(/^webcal:/i,"https:"));
+const p2=n=>String(n).padStart(2,"0");
+let OFF=0;const cur=()=>new Date(Date.now()+OFF);
+const WD=["日","月","火","水","木","金","土"];
+
+function tick(){autoRelease();renderSch();const n=cur();$("time").replaceChildren(document.createTextNode(p2(n.getHours())+":"+p2(n.getMinutes())),el("span","sec",":"+p2(n.getSeconds())));
+ $("date").textContent=`${n.getMonth()+1}月${n.getDate()}日(${WD[n.getDay()]})`+"";
+ {const hn=holiday(n);if(hn)$("date").append(" ",el("span","hn",hn));if(OFF)$("date").append(el("span","tst","※テスト中"))}renderTr()}
+
+/* 天気 */
+const WC=c=>c==0?"快晴":c<=2?"晴れ":c==3?"くもり":c<=48?"霧":c<=57?"霧雨":c<=67?"雨":c<=77?"雪":c<=82?"にわか雨":c<=86?"にわか雪":"雷雨";
+async function weather(){const b=$("wx");
+ try{
+  const g=await(await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&language=ja&name="+encodeURIComponent(C.place))).json();
+  const r=g.results&&g.results[0];if(!r)throw Error("場所が見つかりません。設定で地名を変えてください");
+  $("wxh").textContent="天気 "+r.name;
+  const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${r.latitude}&longitude=${r.longitude}&timezone=auto&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=4`)).json();
+  b.replaceChildren();
+  const top=el("div","wx"),a=el("div");a.append(el("div","big",Math.round(w.current.temperature_2m)+"°"));
+  const s=el("div");s.append(el("b",null,WC(w.current.weather_code)));
+  const d=w.daily,m=el("small",null,`最高 ${Math.round(d.temperature_2m_max[0])}° / 最低 ${Math.round(d.temperature_2m_min[0])}° / 降水 ${d.precipitation_probability_max[0]}%`);
+  s.append(m);top.append(a,s);b.append(top);
+  const ds=el("div","days");
+  for(let i=1;i<4;i++){const x=el("div");const dt=new Date(d.time[i]+"T00:00");
+   x.append(document.createTextNode(`${dt.getMonth()+1}/${dt.getDate()}(${WD[dt.getDay()]})`),el("b",null,WC(d.weather_code[i])),document.createTextNode(`${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°`));ds.append(x)}
+  b.append(ds);
+ }catch(e){b.replaceChildren(el("div","err",e.message))}}
+
+/* RSS */
+function chk(r,t){
+ if(/^\s*(<!doctype html|<html)/i.test(t))throw Error("中継機能が動いていません(functionsフォルダの場所を確認)");
+ if(r.status==404)throw Error("中継機能が見つかりません(404)。functions/api/proxy.js の場所を確認");
+ if(r.status==502)throw Error("取得元がエラーを返しました("+t.replace("upstream:","")+")。URLを確認");
+ if(!r.ok)throw Error("取得に失敗しました("+r.status+")")}
+const FB="https://news.yahoo.co.jp/rss/topics/top-picks.xml";
+async function feed(u){const r=await fetch(px(u));const t=await r.text();chk(r,t);
+ const it=[...new DOMParser().parseFromString(t,"text/xml").querySelectorAll("item")].slice(0,6);
+ if(!it.length)throw Error("RSSの形式が読み取れません");
+ return it.map(i=>{const q=s=>{const e=i.querySelector(s);return e?e.textContent.replace(/<[^>]*>/g,"").trim():""};return{t:q("title"),d:q("description")}})}
+let NW=[],NI=0;
+function drawNews(){const u=$("news"),n=NW.length;if(!n)return;
+ const g=k=>NW[(NI+k)%n],lead=el("li","lead"),a=g(0);
+ lead.append(el("div","lt",a.t));if(a.d&&a.d!=a.t)lead.append(el("div","ld",a.d));
+  const m=Math.min(2,n-1);
+ const it=[lead];for(let k=1;k<=m;k++)it.push(el("li","sm",g(k).t));
+ u.replaceChildren(...it)}
+async function news(){const u=$("news");let h="ニュース",ts;
+ try{ts=await feed(C.rss)}catch(e){
+  try{ts=await feed(FB);h="ニュース(代替: Yahoo!)"}catch{u.replaceChildren(el("li","err",e.message+" URL: "+C.rss));return}}
+ $("nwh").textContent=h;NW=ts;NI=0;drawNews()}
+
+/* カレンダー(ICS) */
+function pd(v,p){const m=v.match(/^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d)?(Z)?)?$/);if(!m)return null;
+ const allDay=m[4]==null;
+ const d=m[7]?new Date(Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))):new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
+ return{d,allDay}}
+let EV=[],EVN=0;
+function drawCal(){const u=$("cal"),now=cur(),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+ const hs=[];for(let i=0;i<7;i++){const d=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+i),h=holiday(d);if(h)hs.push({d,allDay:true,hol:true,sum:h})}
+ if(!C.ics&&!hs.length)return;
+ const L=EV.filter(e=>e.allDay||e.end>now).concat(hs).sort((a,b)=>a.d-b.d||(b.hol?1:0)-(a.hol?1:0));
+ if(!L.length){u.replaceChildren(el("li",null,EV.length?"残りの予定はありません":"今後7日間の予定はありません"));return}
+ let last="";
+ u.replaceChildren(...L.slice(0,5).map(e=>{const l=el("li",e.hol?"hol":"");
+  const dd=Math.round((new Date(e.d.getFullYear(),e.d.getMonth(),e.d.getDate())-t0)/864e5);
+  const day=dd==0?"今日":dd==1?"明日":`${e.d.getMonth()+1}/${e.d.getDate()}(${WD[e.d.getDay()]})`;
+  const a=el("span","dd"+(dd==0?" td":""),day==last?"":day);last=day;
+  const sp=el("span","ev");sp.append(el("b",null,e.hol?"祝日":e.allDay?"終日":p2(e.d.getHours())+":"+p2(e.d.getMinutes())),document.createTextNode(e.sum));
+  l.append(a,sp);return l}))}
+async function cal(){const u=$("cal");
+ if(!C.ics){u.replaceChildren(el("li","err","設定でカレンダーのURLを入力してください"));return}
+ try{
+  const r=await fetch(px(C.ics));const raw=await r.text();
+  chk(r,raw);
+  if(!raw.includes("BEGIN:VCALENDAR"))throw Error("カレンダーの形式ではありません。URLを確認してください");
+  const t=raw.replace(/\r?\n[ \t]/g,"");
+  const from=cur();from.setHours(0,0,0,0);const to=new Date(from.getTime()+7*864e5);
+  const ev=[];
+  for(const blk of t.split("BEGIN:VEVENT").slice(1)){
+   const g=n=>{const m=blk.match(new RegExp("^"+n+"([;:][^\\r\\n]*)$","m"));return m?m[1]:null};
+   const ds=g("DTSTART");if(!ds)continue;
+   const s=pd(ds.slice(ds.lastIndexOf(":")+1).trim());if(!s)continue;
+   const de=g("DTEND");const en=de?pd(de.slice(de.lastIndexOf(":")+1).trim()):null;const dur=!s.allDay&&en?Math.max(en.d-s.d,0):3600e3;
+   const sum=(g("SUMMARY")||"").replace(/^[^:]*:/,"").replace(/\\,/g,",").replace(/\\n/g," ")||"(無題)";
+   const rr=g("RRULE");let starts=[s.d];
+   if(rr){const f=(rr.match(/FREQ=(\w+)/)||[])[1],iv=+((rr.match(/INTERVAL=(\d+)/)||[])[1]||1);
+    const un=(rr.match(/UNTIL=(\d{8})/)||[])[1];const lim=un?pd(un).d:null;
+    let c=new Date(s.d);const step=f=="DAILY"?iv*864e5:f=="WEEKLY"?iv*7*864e5:0;
+    if(step&&c<from)c=new Date(c.getTime()+Math.floor((from-c)/step)*step);
+    for(let k=0;k<400&&c<to;k++){if(c>=from&&(!lim||c<=lim))starts.push(new Date(c));
+     if(step)c=new Date(c.getTime()+step);else if(f=="MONTHLY")c.setMonth(c.getMonth()+iv);else if(f=="YEARLY")c.setFullYear(c.getFullYear()+iv);else break}
+    starts=starts.slice(1)}
+   for(const d of starts)if(d>=from&&d<to)ev.push({d,allDay:s.allDay,sum,end:new Date(d.getTime()+dur)})}
+  EV=ev.sort((a,b)=>a.d-b.d);EVN=t.split("BEGIN:VEVENT").length-1;drawCal();
+ }catch(e){u.replaceChildren(el("li","err",e.message||"予定を取得できません"))}}
+
+/* 時刻表 */
+const tl=s=>(s||"").split(/[\s,、]+/).map(x=>x.match(/^(\d{1,2}):(\d\d)$/)).filter(Boolean).map(m=>+m[1]*60+ +m[2]).sort((a,b)=>a-b);
+const HC={};
+const nth=(y,m,n)=>1+(8-new Date(y,m,1).getDay())%7+(n-1)*7;
+function hmap(y){if(HC[y])return HC[y];
+ const H={},k=(m,d)=>m+"-"+d,add=(m,d,n)=>{H[k(m,d)]=n},yy=y-1980,ex=Math.floor(yy/4);
+ add(1,1,"元日");add(1,nth(y,0,2),"成人の日");add(2,11,"建国記念の日");add(2,23,"天皇誕生日");
+ add(3,Math.floor(20.8431+.242194*yy-ex),"春分の日");add(4,29,"昭和の日");add(5,3,"憲法記念日");add(5,4,"みどりの日");add(5,5,"こどもの日");
+ add(7,nth(y,6,3),"海の日");add(8,11,"山の日");add(9,nth(y,8,3),"敬老の日");add(9,Math.floor(23.2488+.242194*yy-ex),"秋分の日");
+ add(10,nth(y,9,2),"スポーツの日");add(11,3,"文化の日");add(11,23,"勤労感謝の日");
+ const has=d=>H[k(d.getMonth()+1,d.getDate())]!=null,nx=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+ const ds=Object.keys(H).map(s=>{const[m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}).sort((a,b)=>a-b);
+ for(const d of ds){const a=nx(d,1);if(!has(a)&&has(nx(d,2))&&a.getDay()!=0&&a.getFullYear()==y)H[k(a.getMonth()+1,a.getDate())]="国民の休日"}
+ for(const d of ds)if(d.getDay()==0){let a=nx(d,1);while(has(a))a=nx(a,1);if(a.getFullYear()==y)H[k(a.getMonth()+1,a.getDate())]="振替休日"}
+ return HC[y]=H}
+const holiday=d=>hmap(d.getFullYear())[(d.getMonth()+1)+"-"+d.getDate()]||null;
+const newYear=d=>(d.getMonth()==11&&d.getDate()>=30)||(d.getMonth()==0&&d.getDate()<=3);
+function renderTr(){const b=$("tr");$("trh").textContent="時刻表 "+(C.d1||"");
+ const n=cur();let now=n.getHours()*60+n.getMinutes();if(now<240)now+=1440;
+ const hol=C.mode=="h"||(C.mode=="auto"&&(n.getDay()==0||n.getDay()==6||holiday(n)||newYear(n)));
+ const all=tl(C[hol?"d1h":"d1w"]);
+ if(!all.length){b.replaceChildren(el("div","err","設定で時刻を入力してください"));return}
+ const ts=all.filter(t=>t>=now).slice(0,3);
+ if(!ts.length){b.replaceChildren(el("div","tt end","本日の運転は終了"));return}
+ b.replaceChildren(...ts.map(t=>{const r=el("div","tr"),m=t-now;
+  r.append(el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
+let SD="";
+const sday=d=>d.getDay()!=0&&!holiday(d);
+function renderSch(){const n=cur(),d=n.getDay(),hm=n.getHours()*60+n.getMinutes(),b=$("sch"),t0=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+ const sw=!sday(n)||(d>=1&&d<=5&&hm>=930)||(d==6&&hm>=750);
+ const key=n.toDateString()+sw;if(key==SD&&b.firstChild)return;SD=key;
+ let t=t0,title="今日の時間割("+WD[d]+")";
+ if(sw){t=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+1);while(!sday(t))t=new Date(t.getFullYear(),t.getMonth(),t.getDate()+1);
+  title=Math.round((t-t0)/864e5)==1?"明日の時間割("+WD[t.getDay()]+")":WD[t.getDay()]+"曜の時間割"}
+ $("sch-h").textContent=title;
+ const td=t.getDay(),ps=(C["s"+td]||"").split(/[\s,、，\/]+/).filter(Boolean);
+ if(!ps.length){b.replaceChildren(el("div","err","設定で時間割を入力してください"));return}
+ b.replaceChildren(...Array.from({length:td==6?4:6},(_,i)=>{const c=el("div","pc"+(ps[i]?"":" e"));c.append(el("i",null,(i+1)+"限"),document.createTextNode(ps[i]||"—"));return c}))}
+
+/* 設定 */
+const f=$("f");
+function applyZ(){const v=parseFloat(C.z);document.documentElement.style.setProperty("--z",v>=.7&&v<=2?v:1.15)}
+applyZ();
+f.elements.z.oninput=()=>{const v=parseFloat(f.elements.z.value);$("zv").textContent="(×"+v.toFixed(2)+")";document.documentElement.style.setProperty("--z",v)};
+$("dlg").addEventListener("close",applyZ);
+const fmt=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+$("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("tt").value=fmt(cur());f.elements.z.oninput();$("dlg").showModal()};
+$("tset").onclick=()=>{const v=$("tt").value;if(!v)return;OFF=new Date(v).getTime()-Date.now();SD="";$("dlg").close();tick();cal()};
+$("treset").onclick=()=>{OFF=0;SD="";$("dlg").close();tick();cal()};
+f.onsubmit=()=>{SD="";for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
+ localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick()};
+
+/* 画面を消さない */
+let wl;async function lock(){try{wl=await navigator.wakeLock.request("screen")}catch{}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible")lock()});
+document.body.addEventListener("click",lock,{once:true});lock();
+
+function setNight(on,keep){document.body.classList.toggle("night",on);$("nbtn").textContent=on?"☀ 昼":"🌙 夜";
+ try{localStorage.setItem("sd_night",on?"1":"0");if(on&&(!keep||!localStorage.getItem("sd_night_at")))localStorage.setItem("sd_night_at",cur().getTime())}catch{}}
+function autoRelease(){if(!document.body.classList.contains("night"))return;
+ const n=cur(),b=new Date(n.getFullYear(),n.getMonth(),n.getDate(),6,0,0);if(n<b)b.setDate(b.getDate()-1);
+ let at=0;try{at=+localStorage.getItem("sd_night_at")||0}catch{}
+ if(at<b.getTime())setNight(false)}
+$("nbtn").onclick=()=>setNight(!document.body.classList.contains("night"));
+{let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv,true)}
+setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
+tick();setInterval(tick,1000);
+weather();news();cal();
+setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);setInterval(drawCal,6e4);setInterval(()=>{NI++;drawNews()},2e4);
+</script>
+</body>
+</html>
