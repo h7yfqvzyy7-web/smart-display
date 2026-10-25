@@ -20,12 +20,6 @@ main{display:grid;gap:14px;grid-template-columns:1.1fr 1fr;transition:transform 
 .col>section,.col>.row2{flex:none}
 .col>section:last-child,.col>.row2{flex:1 0 auto}
 .col>.row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
-.music{grid-column:1/3}
-.mchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.mchips button{background:var(--bg);color:var(--mu);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font:inherit;font-size:calc(18px*var(--z))}
-.mchips button.on{color:var(--hi);border-color:var(--hi)}
-.music iframe{display:block;width:100%;border:0;border-radius:12px}
-body.night .music iframe{filter:brightness(.4) sepia(.5)}
 .hn{color:var(--hol);font-size:.8em;margin-left:.3em}
 section{background:var(--panel);border-radius:18px;padding:16px 22px;min-height:0;overflow:hidden;transition:opacity 3s,background 3s}
 h2{font-size:calc(20px*var(--z));font-weight:700;color:var(--mu);margin-bottom:10px}
@@ -89,7 +83,7 @@ textarea{height:70px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button.pr2{margin-top:10px;background:none;color:var(--hi);border:1px solid var(--hi);border-radius:12px;padding:12px 10px;font:inherit;font-weight:700}
 button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
-@media (orientation:portrait){main{grid-template-columns:1fr}.clock,.music{grid-column:1}.col>.row2{flex:none}}
+@media (orientation:portrait){main{grid-template-columns:1fr}.clock{grid-column:1}.col>.row2{flex:none}}
 </style>
 </head>
 <body>
@@ -106,7 +100,6 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
       <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
     </div>
   </div>
-  <section class="music"><h2>♪ Apple Music</h2><div id="music"></div></section>
 </main>
 
 <dialog id="dlg"><form method="dialog" id="f">
@@ -131,8 +124,6 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
   </div>
   <label>文字の大きさ <span id="zv"></span></label>
   <input type="range" name="z" min="0.8" max="1.6" step="0.05">
-  <label>Apple Music の URL(プレイリスト・アルバム・曲。複数のときは1行に1つ)</label>
-  <textarea name="mus" placeholder="https://music.apple.com/jp/playlist/..."></textarea>
   <label>ダイヤの切り替え</label>
   <select name="mode"><option value="auto">自動(土日=休日)</option><option value="w">常に平日</option><option value="h">常に休日</option></select>
   <label>動作確認用: 日時を変更(ページを開き直すと元に戻ります。天気とニュースは実際のまま)</label>
@@ -142,7 +133,7 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 </form></dialog>
 
 <script>
-const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto",s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",mus:"",z:"1.15"};
+const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto",s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",z:"1.15"};
 let C;try{C={...DEF,...JSON.parse(localStorage.getItem("sd")||"{}")}}catch{C={...DEF}};for(const k in DEF)if(!C[k])C[k]=DEF[k];C.rss=C.rss.replace("www3.nhk.or.jp/rss/","www.nhk.or.jp/rss/");
 const $=id=>document.getElementById(id);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -268,19 +259,6 @@ function renderTr(){const b=$("tr");$("trh").textContent="時刻表 "+(C.d1||"")
  if(!ts.length){b.replaceChildren(el("div","tt end","本日の運転は終了"));return}
  b.replaceChildren(...ts.map(t=>{const r=el("div","tr"),m=t-now;
   r.append(el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
-const embedUrl=u=>{try{const a=new URL(u.trim());if(a.hostname!="music.apple.com")return null;a.hostname="embed.music.apple.com";return a.toString()}catch{return null}};
-let MI=0,MKEY="";
-function renderMusic(){const b=$("music"),urls=(C.mus||"").split(/\s+/).map(embedUrl).filter(Boolean);
- if(MI>=urls.length)MI=0;
- const key=urls.join("|")+"#"+MI;if(key==MKEY)return;MKEY=key;
- if(!urls.length){b.replaceChildren(el("div","err","設定に Apple Music の URL を入れると、ここにプレーヤーが出ます"));return}
- const w=el("div");
- if(urls.length>1){const ch=el("div","mchips");urls.forEach((u,i)=>{let t="";try{t=decodeURIComponent(new URL(u).pathname.split("/")[3]||"")}catch{}
-  const bt=el("button",i==MI?"on":"",(t||"曲"+(i+1)).slice(0,14));bt.onclick=()=>{MI=i;renderMusic()};ch.append(bt)});w.append(ch)}
- const u=urls[MI],fr=document.createElement("iframe");
- fr.allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write";
- fr.setAttribute("sandbox","allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation");
- fr.height=/\/song\/|[?&]i=/.test(u)?175:450;fr.src=u;w.append(fr);b.replaceChildren(w)}
 let SD="";
 const sday=d=>d.getDay()!=0&&!holiday(d);
 function renderSch(){const n=cur(),d=n.getDay(),hm=n.getHours()*60+n.getMinutes(),b=$("sch"),t0=new Date(n.getFullYear(),n.getMonth(),n.getDate());
@@ -305,7 +283,7 @@ $("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C
 $("tset").onclick=()=>{const v=$("tt").value;if(!v)return;OFF=new Date(v).getTime()-Date.now();SD="";$("dlg").close();tick();cal()};
 $("treset").onclick=()=>{OFF=0;SD="";$("dlg").close();tick();cal()};
 f.onsubmit=()=>{SD="";for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
- localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick();renderMusic()};
+ localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick()};
 
 /* 画面を消さない */
 let wl;async function lock(){try{wl=await navigator.wakeLock.request("screen")}catch{}}
@@ -321,7 +299,6 @@ function autoRelease(){if(!document.body.classList.contains("night"))return;
 $("nbtn").onclick=()=>setNight(!document.body.classList.contains("night"));
 {let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv,true)}
 setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
-renderMusic();
 tick();setInterval(tick,1000);
 weather();news();cal();
 setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);setInterval(drawCal,6e4);setInterval(()=>{NI++;drawNews()},2e4);
