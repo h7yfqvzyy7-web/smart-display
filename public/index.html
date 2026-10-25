@@ -279,7 +279,7 @@ function renderMusic(){const b=$("music"),urls=(C.mus||"").split(/\s+/).map(embe
   const bt=el("button",i==MI?"on":"",(t||"曲"+(i+1)).slice(0,14));bt.onclick=()=>{MI=i;renderMusic()};ch.append(bt)});w.append(ch)}
  const u=urls[MI],fr=document.createElement("iframe");
  fr.allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write";
- fr.setAttribute("sandbox","allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation");
+ fr.setAttribute("sandbox","allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation");
  fr.height=/\/song\/|[?&]i=/.test(u)?175:450;fr.src=u;w.append(fr);b.replaceChildren(w)}
 let SD="";
 const sday=d=>d.getDay()!=0&&!holiday(d);
