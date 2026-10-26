@@ -90,10 +90,19 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 #st li{font-size:calc(24px*var(--z));align-items:center}
 #st li.bad{color:#e9a38a}
 #st{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));align-items:stretch;gap:10px}
-#st li{display:flex;flex-direction:column;align-items:stretch;gap:7px;background:var(--bg);border-radius:12px;padding:12px 14px;min-width:0;font-size:calc(18px*var(--z))}
-.rail-head{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:.86em}
+#st li{display:flex;flex-direction:column;align-items:stretch;gap:0;background:var(--bg);border-radius:12px;padding:0;min-width:0;font-size:calc(18px*var(--z));overflow:hidden}
+.rail-top{display:flex;align-items:center;gap:10px;padding:10px 14px;min-height:52px;background:var(--rail-color,#52697d);color:#fff}
+.rail-code{display:inline-flex;align-items:center;justify-content:center;min-width:38px;padding:4px 7px;border-radius:7px;background:#ffffffed;color:var(--rail-color,#52697d);font-size:.8em;font-weight:700;letter-spacing:.04em}
+.rail-name{font-weight:700;line-height:1.25}
+.rail-body{display:grid;gap:6px;padding:10px 14px 13px}
+.rail-statusline{display:flex;align-items:center;gap:8px}
 .rail-state{font-size:1.2em;font-weight:700;line-height:1.25}
 #st li.bad .rail-state{color:var(--hol)}
+.rail-mark{min-width:1.2em;text-align:center;font-size:1.28em;font-weight:900;line-height:1}
+.rail-mark.normal,.rail-state.normal{color:var(--hi)}
+.rail-mark.delay,.rail-state.delay{color:#f3b85a}
+.rail-mark.suspended,.rail-state.suspended{color:#ff7182}
+.rail-mark.other,.rail-state.other{color:#c1a4e4}
 .rail-detail{font-size:.78em;line-height:1.45;color:var(--mu);white-space:normal}
 .si{font-size:.8em}
 .sthint{margin-top:10px;color:var(--mu);font-size:calc(14px*var(--z))}
@@ -190,7 +199,8 @@ async function weather(){const b=$("wx");
 
 /* 運行情報 */
 async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s.trim()).filter(Boolean);
- const card=(name,state,detail="",kind="")=>{const l=el("li",kind),h=el("div","rail-head");h.append(el("span","si",kind==="bad"?"🔴":kind==="err"?"⚠️":"🟢"),el("span",null,name));l.append(h,el("div","rail-state",state));if(detail)l.append(el("div","rail-detail",detail));return l};
+ const themes=[[/山手線/,"JY","#78b83f"],[/京浜東北|根岸線/,"JK","#00a3d9"],[/湘南新宿/,"JS","#d92332"],[/埼京/,"JA","#00a7a0"],[/ニューシャトル|埼玉新都市交通/,"NS","#e8961a"],[/小田急小田原/,"OH","#005bac"],[/小田急江ノ島/,"OE","#00a0df"],[/小田急多摩/,"OT","#00a878"],[/東海道本線|東海道線/,"JT","#f15a24"],[/横須賀線/,"JO","#0072bc"],[/横浜線/,"JH","#7cc6e4"],[/中央線\(快速\)/,"JC","#f15a22"],[/中央総武|総武線\(各停\)/,"JB","#ffd400"],[/宇都宮線|高崎線/,"JU","#f68b1f"],[/常磐線\(快速\)/,"JJ","#00b5ad"],[/常磐線\(各停\)/,"JL","#5aae3e"],[/京葉線/,"JE","#c9252f"],[/武蔵野線/,"JM","#e4a600"]];
+ const card=(name,state,detail="",kind="")=>{const th=themes.find(x=>x[0].test(name))||[null,"","#52697d"],l=el("li",kind),top=el("div","rail-top"),body=el("div","rail-body"),line=el("div","rail-statusline"),mark=/見合わせ/.test(state)?"×":/遅延/.test(state)?"△":/平常運転/.test(state)?"〇":"！",tone=mark==="〇"?"normal":mark==="△"?"delay":mark==="×"?"suspended":"other";l.style.setProperty("--rail-color",th[2]);if(th[1])top.append(el("span","rail-code",th[1]));top.append(el("span","rail-name",name));line.append(el("span","rail-mark "+tone,mark),el("span","rail-state "+tone,state));body.append(line);if(detail)body.append(el("div","rail-detail",detail));l.append(top,body);return l};
  if(!favs.length){u.replaceChildren(card("運行情報","設定で見たい路線を入力してください","","err"));return}
  try{
   // Yahoo!の地域ページで路線リンクを探し、状態は各路線の詳細ページから取得する。
@@ -355,7 +365,7 @@ function autoRelease(){if(!document.body.classList.contains("night"))return;
 $("nbtn").onclick=()=>setNight(!document.body.classList.contains("night"));
 {let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv,true)}
 setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
-status();setInterval(status,5*6e4);
+status();setInterval(status,6e4);
 tick();setInterval(tick,1000);
 weather();news();cal();
 setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);setInterval(drawCal,6e4);setInterval(()=>{NI++;drawNews()},2e4);
