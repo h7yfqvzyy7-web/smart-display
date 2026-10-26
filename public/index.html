@@ -89,6 +89,12 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 #st{gap:6px}
 #st li{font-size:calc(24px*var(--z));align-items:center}
 #st li.bad{color:#e9a38a}
+#st{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));align-items:stretch;gap:10px}
+#st li{display:flex;flex-direction:column;align-items:stretch;gap:7px;background:var(--bg);border-radius:12px;padding:12px 14px;min-width:0;font-size:calc(18px*var(--z))}
+.rail-head{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:.86em}
+.rail-state{font-size:1.2em;font-weight:700;line-height:1.25}
+#st li.bad .rail-state{color:var(--hol)}
+.rail-detail{font-size:.78em;line-height:1.45;color:var(--mu);white-space:normal}
 .si{font-size:.8em}
 .sthint{margin-top:10px;color:var(--mu);font-size:calc(14px*var(--z))}
 .wx .ic{font-size:calc(64px*var(--z));line-height:1}
@@ -184,7 +190,8 @@ async function weather(){const b=$("wx");
 
 /* 運行情報 */
 async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s.trim()).filter(Boolean);
- if(!favs.length){u.replaceChildren(el("li","err","設定で、運行情報を見たい路線を入れてください"));return}
+ const card=(name,state,detail="",kind="")=>{const l=el("li",kind),h=el("div","rail-head");h.append(el("span","si",kind==="bad"?"🔴":kind==="err"?"⚠️":"🟢"),el("span",null,name));l.append(h,el("div","rail-state",state));if(detail)l.append(el("div","rail-detail",detail));return l};
+ if(!favs.length){u.replaceChildren(card("運行情報","設定で見たい路線を入力してください","","err"));return}
  try{
   // Yahoo!の地域ページで路線リンクを探し、状態は各路線の詳細ページから取得する。
   const settled=await Promise.allSettled(Array.from({length:8},async(_,i)=>{
@@ -200,7 +207,7 @@ async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s
    .replace(/埼玉新都市交通/g,"ニューシャトル").replace(/埼京線/g,"埼京川越線").replace(/京浜東北線/g,"京浜東北根岸線");
   const list=pages.flat(),rows=[];
   for(const f of favs){const k=norm(f),routes=[...new Map(list.filter(e=>{const n=norm(e.name);return n.includes(k)||k.includes(n)}).map(e=>[e.href,e])).values()];
-   if(!routes.length){const l=el("li",failed.length?"err":"");l.append(el("span","si",failed.length?"⚠️":"⚪"),el("span",null,`${f} ${failed.length?"情報未取得（一部ページ取得失敗）":"Yahoo!の路線一覧に見つかりません"}`));rows.push(l);continue}
+   if(!routes.length){rows.push(card(f,failed.length?"情報未取得（一部ページ取得失敗）":"Yahoo!の路線一覧に見つかりません","","err"));continue}
    const results=await Promise.allSettled(routes.map(async route=>{
     const url=new URL(route.href,"https://transit.yahoo.co.jp").href,r=await fetch(px(url)),t=await r.text();
     if(!r.ok)throw Error("詳細ページ HTTP "+r.status);
@@ -209,11 +216,11 @@ async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s
     return{name:route.name,state,detail:doc.querySelector(".elmServiceStatus dd p")?.textContent.trim()||""};
    }));
    const detailRows=results.filter(x=>x.status==="fulfilled").map(x=>x.value),active=detailRows.filter(e=>!/平常運転/.test(e.state));
-   if(active.length)active.forEach(e=>{const l=el("li","bad");l.append(el("span","si","🔴"),el("span",null,`${e.name} ${e.state}${e.detail?"："+e.detail:""}`));rows.push(l)});
-   else if(!detailRows.length){const l=el("li","err");l.append(el("span","si","⚠️"),el("span",null,`${f} 運行状況を取得できません`));rows.push(l)}
-   else{const l=el("li");l.append(el("span","si","🟢"),el("span",null,`${f} 平常運転`));rows.push(l)}}
+   if(active.length)active.forEach(e=>rows.push(card(e.name,e.state,e.detail,"bad")));
+   else if(!detailRows.length)rows.push(card(f,"運行状況を取得できません","","err"));
+   else rows.push(card(f,"平常運転"));}
   u.replaceChildren(...rows.slice(0,8));const n=cur();$("sth").textContent="運行情報 "+p2(n.getHours())+":"+p2(n.getMinutes())+" 更新";
- }catch(e){u.replaceChildren(el("li","err","Yahoo!路線情報を取得できません: "+(e.message||"不明なエラー")))}}/* RSS */
+ }catch(e){u.replaceChildren(card("運行情報","取得できません",e.message||"不明なエラー","err"))}}/* RSS */
 function chk(r,t){
  if(/^\s*(<!doctype html|<html)/i.test(t))throw Error("中継機能が動いていません(functionsフォルダの場所を確認)");
  if(r.status==404)throw Error("中継機能が見つかりません(404)。functions/api/proxy.js の場所を確認");
