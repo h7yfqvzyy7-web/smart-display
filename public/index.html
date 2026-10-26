@@ -263,14 +263,22 @@ async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s
   u.replaceChildren(...rows.slice(0,8));const n=cur();$("sth").textContent="運行情報 "+p2(n.getHours())+":"+p2(n.getMinutes())+" 更新";
  }catch(e){u.replaceChildren(card("運行情報","取得できません",e.message||"不明なエラー","err"))}}/* RSS */
 function chk(r,t){
- if(/^\s*(<!doctype html|<html)/i.test(t))throw Error("中継機能が動いていません(functionsフォルダの場所を確認)");
- if(r.status==404)throw Error("中継機能が見つかりません(404)。functions/api/proxy.js の場所を確認");
- if(r.status==502)throw Error("取得元がエラーを返しました("+t.replace("upstream:","")+")。URLを確認");
- if(!r.ok)throw Error("取得に失敗しました("+r.status+")")}
-async function feed(u){const r=await fetch(px(u));const t=await r.text();chk(r,t);
- const it=[...new DOMParser().parseFromString(t,"text/xml").querySelectorAll("item")].slice(0,6);
- if(!it.length)throw Error("RSSの形式が読み取れません");
- return it.map(i=>{const q=s=>{const e=i.querySelector(s);return e?e.textContent.replace(/<[^>]*>/g,"").trim():""};return{t:q("title"),d:q("description")}})}
+ if(r.status==404)throw Error("中継機能が見つかりません(404)。functions/api/proxy.js を配置してサイトを再公開してください");
+ if(r.status==502)throw Error("取得元がエラーを返しました("+t.replace("upstream:","")+")。URLを確認してください");
+ if(!r.ok)throw Error("取得に失敗しました("+r.status+")") }
+async function feed(u){
+ const load=async url=>{const r=await fetch(px(url)),t=await r.text();chk(r,t);return{r,t,url}};
+ const parse=t=>{const d=new DOMParser().parseFromString(t,"text/xml");let items=[...d.querySelectorAll("item")].map(i=>{const q=s=>i.querySelector(s)?.textContent.trim()||"";return{t:q("title"),d:q("description")}});if(!items.length)items=[...d.querySelectorAll("entry")].map(i=>({t:i.querySelector("title")?.textContent.trim()||"",d:i.querySelector("summary,content")?.textContent.trim()||""}));return items.filter(i=>i.t).slice(0,6)};
+ let result=await load(u),contentType=result.r.headers.get("content-type")||"";
+ if(/<\s*(?:!doctype\s+html|html)\b/i.test(result.t)||/text\/html/i.test(contentType)){
+  const page=new DOMParser().parseFromString(result.t,"text/html"),baseUrl=new URL(u),links=[...page.querySelectorAll('link[rel~="alternate"][href],a[href]')].map(a=>({url:new URL(a.href||a.getAttribute("href"),baseUrl).href,label:(a.textContent||"").trim(),type:(a.getAttribute("type")||"")})).filter(x=>/^https?:/.test(x.url)&&(/\.xml(?:$|[?#])|\.rss(?:$|[?#])/i.test(x.url)||/rss\+xml|atom\+xml/i.test(x.type)));
+  if(/(^|\.)nhk\.or\.jp$/i.test(baseUrl.hostname))links.unshift({url:"https://www.nhk.or.jp/rss/news/cat0.xml",label:"NHKニュース",type:"application/rss+xml"});
+  const candidates=[...new Map(links.sort((a,b)=>Number(/news\/cat0\.xml/i.test(b.url))-Number(/news\/cat0\.xml/i.test(a.url))).map(x=>[x.url,x])).values()];
+  for(const candidate of candidates){try{const found=await load(candidate.url),items=parse(found.t);if(items.length)return items}catch{}}
+  throw Error("入力URLのページ内に読み取れるRSSフィードが見つかりません。RSSのXML URLを設定してください");
+ }
+ const items=parse(result.t);if(!items.length)throw Error("RSSまたはAtomの配信形式を読み取れません");return items
+}
 let NW=[],NI=0;
 function drawNews(){const u=$("news"),n=NW.length;if(!n)return;
  const g=k=>NW[(NI+k)%n],lead=el("li","lead"),a=g(0);
