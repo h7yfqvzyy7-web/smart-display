@@ -189,7 +189,7 @@ async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s
   // Yahoo!路線情報の地域別一覧から取得。1地域が失敗しても取得できた地域は表示する。
   const settled=await Promise.allSettled(Array.from({length:8},async(_,i)=>{
    const r=await fetch(px(`https://transit.yahoo.co.jp/diainfo/area/${i+1}`)),t=await r.text();
-   if(!r.ok)throw Error("Yahoo!ページの取得に失敗 (HTTP "+r.status+")");
+   if(!r.ok)throw Error("中継エラー HTTP "+r.status+(t.trim()?" / "+t.trim().slice(0,160):""));
    const doc=new DOMParser().parseFromString(t,"text/html");
    if(!/運行情報/.test(doc.querySelector("h1")?.textContent||"")||!doc.querySelector("table"))throw Error("Yahoo!ページの形式を認識できません");
    return [...doc.querySelectorAll("table tr")].map(tr=>{
