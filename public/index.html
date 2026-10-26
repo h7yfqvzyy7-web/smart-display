@@ -19,7 +19,7 @@ main{display:grid;gap:14px;grid-template-columns:1.1fr 1fr;transition:transform 
 .col{display:flex;flex-direction:column;gap:14px;min-height:0}
 .col>section,.col>.row2{flex:none}
 .col>section:last-child,.col>.row2{flex:1 0 auto}
-.col>.row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
+.col>.row2{display:grid;grid-template-columns:1.75fr 1fr;gap:14px}
 .hn{color:var(--hol);font-size:.8em;margin-left:.3em}
 section{background:var(--panel);border-radius:18px;padding:16px 22px;min-height:0;overflow:hidden;transition:opacity 3s,background 3s}
 h2{font-size:calc(20px*var(--z));font-weight:700;color:var(--mu);margin-bottom:10px}
@@ -65,11 +65,12 @@ body.night dialog{--panel:#1a2533;--bg:#121a24;--line:#2a3a4d;--tx:#eaf0f5;--mu:
 .dir .n em{font-style:normal;color:var(--hi);font-size:calc(26px*var(--z));margin-left:12px}
 .dir .l{color:var(--mu);font-size:calc(20px*var(--z))}
 .err{color:#e9a38a;font-size:calc(20px*var(--z))}
-.tr{display:flex;align-items:baseline;gap:10px;line-height:1.2;margin-bottom:8px;white-space:nowrap}
+.tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;line-height:1.2;margin-bottom:8px;white-space:nowrap}
+.tl{font-size:calc(14px*var(--z));color:var(--mu);min-width:calc(46px*var(--z))}
 .row2>section{padding:12px 16px}
-.tt{font-size:calc(34px*var(--z));font-weight:700;font-variant-numeric:tabular-nums}
+.tt{font-size:calc(30px*var(--z));font-weight:700;font-variant-numeric:tabular-nums}
 .tt.end{font-size:calc(24px*var(--z))}
-.tm{font-size:calc(26px*var(--z));font-weight:700;color:var(--hi)}
+.tm{font-size:calc(25px*var(--z));font-weight:700;color:var(--hi)}
 #sch{display:grid;gap:6px}
 .pc{display:flex;gap:10px;align-items:baseline;background:var(--bg);border-radius:10px;padding:3px 8px;font-size:calc(20px*var(--z));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc.e{color:var(--mu)}
@@ -284,8 +285,8 @@ function renderTr(){const b=$("tr");$("trh").textContent="時刻表";const sub=[
  if(!all.length){b.replaceChildren(el("div","err","設定で時刻を入力してください"));return}
  const ts=all.filter(t=>t>=now).slice(0,3);
  if(!ts.length){b.replaceChildren(el("div","tt end","本日の運転は終了"));return}
- b.replaceChildren(...(sub?[el("div","tsub",sub)]:[]),...ts.map(t=>{const r=el("div","tr"),m=t-now;
-  r.append(el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
+ b.replaceChildren(...(sub?[el("div","tsub",sub)]:[]),...ts.map((t,i)=>{const r=el("div","tr"),m=t-now;
+  r.append(el("span","tl",["先発","次発","次々発"][i]),el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
 let SD="";
 const sday=d=>d.getDay()!=0&&!holiday(d);
 function renderSch(){const n=cur(),d=n.getDay(),hm=n.getHours()*60+n.getMinutes(),b=$("sch"),t0=new Date(n.getFullYear(),n.getMonth(),n.getDate());
