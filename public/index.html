@@ -113,7 +113,7 @@ html.stack .clock,html.stack .st{grid-column:1}
       <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
     </div>
   </div>
-  <section class="st"><h2 id="sth">運行情報</h2><ul id="st"></ul><div class="sthint">※「遅延情報なし」は、取得元(鉄道com)に遅延の情報がないという意味です。運転見合わせなどを保証するものではありません。</div></section>
+  <section class="st"><h2 id="sth">運行情報</h2><ul id="st"></ul><div class="sthint">※Yahoo!路線情報の掲載内容を表示します。情報は取得時点のもので、実際の運行状況と異なる場合があります。</div></section>
 </main>
 
 <dialog id="dlg"><form method="dialog" id="f">
@@ -136,7 +136,7 @@ html.stack .clock,html.stack .st{grid-column:1}
     <div><label>金曜</label><input name="s5"></div>
     <div><label>土曜</label><input name="s6"></div>
   </div>
-  <label>運行情報を表示する路線(1行に1つ。例: JR東日本 埼京線 / 埼玉新都市交通)</label>
+  <label>運行情報を表示する路線(1行に1つ。Yahoo!路線情報の路線名に近い名前を入力)</label>
   <textarea name="lines" placeholder="JR東日本 埼京線"></textarea>
   <label>文字の大きさ <span id="zv"></span></label>
   <input type="range" name="z" min="0.8" max="2.5" step="0.05">
@@ -185,13 +185,26 @@ async function weather(){const b=$("wx");
 /* 運行情報 */
 async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s.trim()).filter(Boolean);
  if(!favs.length){u.replaceChildren(el("li","err","設定で、運行情報を見たい路線を入れてください"));return}
- try{const r=await fetch(px("https://tetsudo.rti-giken.jp/free/delay.json")),t=await r.text();chk(r,t);
-  const list=JSON.parse(t),norm=s=>String(s||"").replace(/[\s\u3000]+/g,"").replace("ニューシャトル","埼玉新都市交通"),rows=[];
-  for(const f of favs){const k=norm(f),hit=list.filter(e=>(norm(e.company)+norm(e.name)).includes(k)||norm(e.name).includes(k));
-   if(hit.length)hit.forEach(e=>{const l=el("li","bad");l.append(el("span","si","🔴"),el("span",null,(e.company?e.company+" ":"")+e.name+" 遅延"));rows.push(l)});
-   else{const l=el("li");l.append(el("span","si","🟢"),el("span",null,f+" 遅延情報なし"));rows.push(l)}}
+ try{
+  // Yahoo!路線情報の地域別一覧から取得。HTMLは同一オリジンの中継経由で読み込む。
+  const pages=await Promise.all(Array.from({length:8},async(_,i)=>{
+   const r=await fetch(px(`https://transit.yahoo.co.jp/diainfo/area/${i+1}`)),t=await r.text();chk(r,t);
+   const doc=new DOMParser().parseFromString(t,"text/html");
+   return [...doc.querySelectorAll("table tr")].map(tr=>{
+    const cells=[...tr.querySelectorAll("th,td")].map(x=>x.textContent.replace(/\s+/g," ").trim());
+    if(cells.length<3)return null;
+    const a=tr.querySelector("td a");if(!a)return null;
+    return{name:a.textContent.trim(),state:cells[1],detail:cells[2]};
+   }).filter(Boolean);
+  }));
+  const list=pages.flat(),norm=s=>String(s||"").toLowerCase().replace(/[\s\u3000・()（）\[\]【】]/g,"")
+   .replace(/埼玉新都市交通/g,"ニューシャトル").replace(/埼京線/g,"埼京川越線"),rows=[];
+  for(const f of favs){const k=norm(f),hit=list.filter(e=>{const n=norm(e.name);return n.includes(k)||k.includes(n)});
+   const active=hit.filter(e=>e.state&&!/平常運転/.test(e.state));
+   if(active.length)active.forEach(e=>{const l=el("li","bad");l.append(el("span","si","🔴"),el("span",null,`${e.name} ${e.state}${e.detail?"："+e.detail:""}`));rows.push(l)});
+   else{const l=el("li");l.append(el("span","si","🟢"),el("span",null,`${f} 平常運転`));rows.push(l)}}
   u.replaceChildren(...rows.slice(0,8));const n=cur();$("sth").textContent="運行情報 "+p2(n.getHours())+":"+p2(n.getMinutes())+" 更新";
- }catch(e){u.replaceChildren(el("li","err","運行情報を取得できません"))}}
+ }catch(e){u.replaceChildren(el("li","err","Yahoo!路線情報を取得できません。時間をおいて再読み込みしてください"))}}
 
 /* RSS */
 function chk(r,t){
