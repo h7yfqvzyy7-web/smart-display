@@ -23,11 +23,12 @@ main{display:grid;gap:14px;grid-template-columns:1.1fr 1fr;transition:transform 
 .hn{color:var(--hol);font-size:.8em;margin-left:.3em}
 section{background:var(--panel);border-radius:18px;padding:16px 22px;min-height:0;overflow:hidden;transition:opacity 3s,background 3s}
 h2{font-size:calc(20px*var(--z));font-weight:700;color:var(--mu);margin-bottom:10px}
-.clock{grid-column:1/3;display:flex;align-items:baseline;gap:28px;background:none;padding:0 6px}
-#time{font-size:calc(clamp(60px,10.5vw,130px)*var(--z));font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
-#date{font-size:calc(clamp(26px,3.6vw,44px)*var(--z));color:var(--mu);white-space:nowrap}
+.clock{grid-column:1/3;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;background:none;padding:0 6px}
+#time{font-size:min(calc(clamp(60px,10.5vw,130px)*var(--z)),17vw);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+#date{font-size:calc(clamp(26px,3.6vw,44px)*var(--z));color:var(--mu)}
 .tst{font-size:.5em;color:var(--hi);margin-left:.6em}
 .tools{margin-left:auto;align-self:flex-start;display:flex;gap:10px}
+.tools button{font-size:calc(16px*min(var(--z),1.6))}
 #gear,#nbtn{background:none;border:1px solid var(--line);color:var(--mu);border-radius:12px;padding:10px 14px;font:inherit;white-space:nowrap}
 ul{list-style:none;padding:0;display:grid;gap:9px}
 li{display:flex;gap:14px;font-size:calc(22px*var(--z));line-height:1.3}
@@ -83,7 +84,18 @@ textarea{height:70px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button.pr2{margin-top:10px;background:none;color:var(--hi);border:1px solid var(--hi);border-radius:12px;padding:12px 10px;font:inherit;font-weight:700}
 button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
-@media (orientation:portrait){main{grid-template-columns:1fr}.clock{grid-column:1}.col>.row2{flex:none}}
+.st{grid-column:1/3}
+#st{gap:6px}
+#st li{font-size:calc(24px*var(--z));align-items:center}
+#st li.bad{color:#e9a38a}
+.si{font-size:.8em}
+.sthint{margin-top:10px;color:var(--mu);font-size:calc(14px*var(--z))}
+.wx .ic{font-size:calc(64px*var(--z));line-height:1}
+.wi{display:block;font-size:calc(30px*var(--z));line-height:1.3}
+.tsub{color:var(--mu);font-size:calc(19px*var(--z));margin-bottom:6px}
+@media (orientation:portrait){main{grid-template-columns:1fr}.clock,.st{grid-column:1}.col>.row2{flex:none}}
+html.stack main{grid-template-columns:1fr}
+html.stack .clock,html.stack .st{grid-column:1}
 </style>
 </head>
 <body>
@@ -100,6 +112,7 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
       <section class="sc"><h2 id="sch-h">今日の時間割</h2><div id="sch"></div></section>
     </div>
   </div>
+  <section class="st"><h2 id="sth">運行情報</h2><ul id="st"></ul><div class="sthint">※「遅延情報なし」は、取得元(鉄道com)に遅延の情報がないという意味です。運転見合わせなどを保証するものではありません。</div></section>
 </main>
 
 <dialog id="dlg"><form method="dialog" id="f">
@@ -122,8 +135,10 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
     <div><label>金曜</label><input name="s5"></div>
     <div><label>土曜</label><input name="s6"></div>
   </div>
+  <label>運行情報を表示する路線(1行に1つ。例: JR東日本 埼京線 / 埼玉新都市交通)</label>
+  <textarea name="lines" placeholder="JR東日本 埼京線"></textarea>
   <label>文字の大きさ <span id="zv"></span></label>
-  <input type="range" name="z" min="0.8" max="1.6" step="0.05">
+  <input type="range" name="z" min="0.8" max="2.5" step="0.05">
   <label>ダイヤの切り替え</label>
   <select name="mode"><option value="auto">自動(土日=休日)</option><option value="w">常に平日</option><option value="h">常に休日</option></select>
   <label>動作確認用: 日時を変更(ページを開き直すと元に戻ります。天気とニュースは実際のまま)</label>
@@ -133,7 +148,7 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 </form></dialog>
 
 <script>
-const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto",s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",z:"1.15"};
+const DEF={place:"東京",ics:"",rss:"https://www.nhk.or.jp/rss/news/cat0.xml",station:"鉄道博物館",d1:"大宮方面",d2:"内宿方面",d1w:"05:44 05:54 06:04 06:14 06:24 06:34 06:39 06:44 06:49 06:54 06:59 07:04 07:09 07:14 07:19 07:24 07:29 07:34 07:39 07:44 07:49 07:54 07:59 08:04 08:09 08:14 08:19 08:24 08:29 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:39 12:54 13:09 13:24 13:39 13:54 14:09 14:24 14:39 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 17:59 18:04 18:14 18:19 18:24 18:34 18:39 18:44 18:54 18:59 19:04 19:14 19:19 19:24 19:34 19:39 19:44 19:54 20:04 20:14 20:24 20:34 20:44 20:54 21:04 21:14 21:24 21:34 21:44 21:54 22:04 22:14 22:29 22:44 22:59 23:14 23:29 23:44 23:59",d1h:"05:51 06:04 06:14 06:24 06:34 06:44 06:54 07:04 07:14 07:24 07:34 07:44 07:54 08:04 08:14 08:24 08:34 08:44 08:54 09:04 09:14 09:24 09:34 09:44 09:54 10:04 10:14 10:24 10:34 10:44 10:54 11:09 11:24 11:39 11:54 12:09 12:24 12:34 12:44 12:54 13:04 13:14 13:24 13:34 13:44 13:54 14:04 14:14 14:24 14:34 14:44 14:54 15:04 15:14 15:24 15:34 15:44 15:54 16:04 16:14 16:24 16:34 16:44 16:54 17:04 17:14 17:24 17:34 17:44 17:54 18:04 18:14 18:24 18:34 18:44 18:54 19:04 19:14 19:24 19:34 19:44 19:59 20:14 20:29 20:44 20:59 21:14 21:29 21:44 21:59 22:19 22:39 22:59 23:19 23:39 23:59",d2w:"05:53 06:03 06:13 06:23 06:33 06:43 06:48 06:53 06:58 07:03 07:08 07:13 07:18 07:23 07:28 07:33 07:38 07:43 07:48 07:53 07:58 08:03 08:08 08:13 08:18 08:23 08:28 08:33 08:38 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:48 13:03 13:18 13:33 13:48 14:03 14:18 14:33 14:48 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:08 18:13 18:23 18:28 18:33 18:43 18:48 18:53 19:03 19:08 19:13 19:23 19:28 19:33 19:43 19:48 19:53 20:03 20:13 20:23 20:33 20:43 20:53 21:03 21:13 21:23 21:33 21:43 21:53 22:03 22:13 22:23 22:38 22:53 23:08 23:23 23:38 23:53 24:08",d2h:"06:03 06:13 06:23 06:33 06:43 06:53 07:03 07:13 07:23 07:33 07:43 07:53 08:03 08:13 08:23 08:33 08:43 08:53 09:03 09:13 09:23 09:33 09:43 09:53 10:03 10:13 10:23 10:33 10:43 10:53 11:03 11:18 11:33 11:48 12:03 12:18 12:33 12:43 12:53 13:03 13:13 13:23 13:33 13:43 13:53 14:03 14:13 14:23 14:33 14:43 14:53 15:03 15:13 15:23 15:33 15:43 15:53 16:03 16:13 16:23 16:33 16:43 16:53 17:03 17:13 17:23 17:33 17:43 17:53 18:03 18:13 18:23 18:33 18:43 18:53 19:03 19:13 19:23 19:33 19:43 19:53 20:08 20:23 20:38 20:53 21:08 21:23 21:38 21:53 22:08 22:28 22:48 23:08 23:28 23:48 24:08",mode:"auto",s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",z:"1.15",lines:"埼玉新都市交通"};
 let C;try{C={...DEF,...JSON.parse(localStorage.getItem("sd")||"{}")}}catch{C={...DEF}};for(const k in DEF)if(!C[k])C[k]=DEF[k];C.rss=C.rss.replace("www3.nhk.or.jp/rss/","www.nhk.or.jp/rss/");
 const $=id=>document.getElementById(id);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -147,23 +162,35 @@ function tick(){autoRelease();renderSch();const n=cur();$("time").replaceChildre
  {const hn=holiday(n);if(hn)$("date").append(" ",el("span","hn",hn));if(OFF)$("date").append(el("span","tst","※テスト中"))}renderTr()}
 
 /* 天気 */
+const WI=(c,day)=>c==0?(day==0?"🌙":"☀️"):c==1?(day==0?"🌙":"🌤️"):c==2?(day==0?"☁️":"⛅"):c==3?"☁️":c<=48?"🌫️":c<=57?"🌦️":c<=67?"🌧️":c<=77?"❄️":c<=82?"🌦️":c<=86?"🌨️":"⛈️";
 const WC=c=>c==0?"快晴":c<=2?"晴れ":c==3?"くもり":c<=48?"霧":c<=57?"霧雨":c<=67?"雨":c<=77?"雪":c<=82?"にわか雨":c<=86?"にわか雪":"雷雨";
 async function weather(){const b=$("wx");
  try{
   const g=await(await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&language=ja&name="+encodeURIComponent(C.place))).json();
   const r=g.results&&g.results[0];if(!r)throw Error("場所が見つかりません。設定で地名を変えてください");
   $("wxh").textContent="天気 "+r.name;
-  const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${r.latitude}&longitude=${r.longitude}&timezone=auto&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=4`)).json();
+  const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${r.latitude}&longitude=${r.longitude}&timezone=auto&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=4`)).json();
   b.replaceChildren();
   const top=el("div","wx"),a=el("div");a.append(el("div","big",Math.round(w.current.temperature_2m)+"°"));
   const s=el("div");s.append(el("b",null,WC(w.current.weather_code)));
   const d=w.daily,m=el("small",null,`最高 ${Math.round(d.temperature_2m_max[0])}° / 最低 ${Math.round(d.temperature_2m_min[0])}° / 降水 ${d.precipitation_probability_max[0]}%`);
-  s.append(m);top.append(a,s);b.append(top);
+  s.append(m);top.append(el("div","ic",WI(w.current.weather_code,w.current.is_day)),a,s);b.append(top);
   const ds=el("div","days");
   for(let i=1;i<4;i++){const x=el("div");const dt=new Date(d.time[i]+"T00:00");
-   x.append(document.createTextNode(`${dt.getMonth()+1}/${dt.getDate()}(${WD[dt.getDay()]})`),el("b",null,WC(d.weather_code[i])),document.createTextNode(`${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°`));ds.append(x)}
+   x.append(document.createTextNode(`${dt.getMonth()+1}/${dt.getDate()}(${WD[dt.getDay()]})`),el("span","wi",WI(d.weather_code[i],1)),el("b",null,WC(d.weather_code[i])),document.createTextNode(`${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°`));ds.append(x)}
   b.append(ds);
  }catch(e){b.replaceChildren(el("div","err",e.message))}}
+
+/* 運行情報 */
+async function status(){const u=$("st"),favs=(C.lines||"").split(/\n+/).map(s=>s.trim()).filter(Boolean);
+ if(!favs.length){u.replaceChildren(el("li","err","設定で、運行情報を見たい路線を入れてください"));return}
+ try{const r=await fetch(px("https://tetsudo.rti-giken.jp/free/delay.json")),t=await r.text();chk(r,t);
+  const list=JSON.parse(t),norm=s=>String(s||"").replace(/[\s\u3000]+/g,"").replace("ニューシャトル","埼玉新都市交通"),rows=[];
+  for(const f of favs){const k=norm(f),hit=list.filter(e=>(norm(e.company)+norm(e.name)).includes(k)||norm(e.name).includes(k));
+   if(hit.length)hit.forEach(e=>{const l=el("li","bad");l.append(el("span","si","🔴"),el("span",null,(e.company?e.company+" ":"")+e.name+" 遅延"));rows.push(l)});
+   else{const l=el("li");l.append(el("span","si","🟢"),el("span",null,f+" 遅延情報なし"));rows.push(l)}}
+  u.replaceChildren(...rows.slice(0,8));const n=cur();$("sth").textContent="運行情報 "+p2(n.getHours())+":"+p2(n.getMinutes())+" 更新";
+ }catch(e){u.replaceChildren(el("li","err","運行情報を取得できません"))}}
 
 /* RSS */
 function chk(r,t){
@@ -250,14 +277,14 @@ function hmap(y){if(HC[y])return HC[y];
  return HC[y]=H}
 const holiday=d=>hmap(d.getFullYear())[(d.getMonth()+1)+"-"+d.getDate()]||null;
 const newYear=d=>(d.getMonth()==11&&d.getDate()>=30)||(d.getMonth()==0&&d.getDate()<=3);
-function renderTr(){const b=$("tr");$("trh").textContent="時刻表 "+(C.d1||"");
+function renderTr(){const b=$("tr");$("trh").textContent="時刻表";const sub=[(C.station?C.station.replace(/駅$/,"")+"駅":""),C.d1||""].filter(Boolean).join(" ・ ");
  const n=cur();let now=n.getHours()*60+n.getMinutes();if(now<240)now+=1440;
  const hol=C.mode=="h"||(C.mode=="auto"&&(n.getDay()==0||n.getDay()==6||holiday(n)||newYear(n)));
  const all=tl(C[hol?"d1h":"d1w"]);
  if(!all.length){b.replaceChildren(el("div","err","設定で時刻を入力してください"));return}
  const ts=all.filter(t=>t>=now).slice(0,3);
  if(!ts.length){b.replaceChildren(el("div","tt end","本日の運転は終了"));return}
- b.replaceChildren(...ts.map(t=>{const r=el("div","tr"),m=t-now;
+ b.replaceChildren(...(sub?[el("div","tsub",sub)]:[]),...ts.map(t=>{const r=el("div","tr"),m=t-now;
   r.append(el("span","tt",p2(Math.floor(t/60)%24)+":"+p2(t%60)),el("span","tm",m<=0?"まもなく":m+"分後"));return r}))}
 let SD="";
 const sday=d=>d.getDay()!=0&&!holiday(d);
@@ -274,16 +301,17 @@ function renderSch(){const n=cur(),d=n.getDay(),hm=n.getHours()*60+n.getMinutes(
 
 /* 設定 */
 const f=$("f");
-function applyZ(){const v=parseFloat(C.z);document.documentElement.style.setProperty("--z",v>=.7&&v<=2?v:1.15)}
+const setZ=v=>{document.documentElement.style.setProperty("--z",v);document.documentElement.classList.toggle("stack",v>1.4)};
+function applyZ(){const v=parseFloat(C.z);setZ(v>=.7&&v<=2.5?v:1.15)}
 applyZ();
-f.elements.z.oninput=()=>{const v=parseFloat(f.elements.z.value);$("zv").textContent="(×"+v.toFixed(2)+")";document.documentElement.style.setProperty("--z",v)};
+f.elements.z.oninput=()=>{const v=parseFloat(f.elements.z.value);$("zv").textContent="(×"+v.toFixed(2)+")";setZ(v)};
 $("dlg").addEventListener("close",applyZ);
 const fmt=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
 $("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("tt").value=fmt(cur());f.elements.z.oninput();$("dlg").showModal()};
 $("tset").onclick=()=>{const v=$("tt").value;if(!v)return;OFF=new Date(v).getTime()-Date.now();SD="";$("dlg").close();tick();cal()};
 $("treset").onclick=()=>{OFF=0;SD="";$("dlg").close();tick();cal()};
 f.onsubmit=()=>{SD="";for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
- localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();tick()};
+ localStorage.setItem("sd",JSON.stringify(C));weather();news();cal();status();tick()};
 
 /* 画面を消さない */
 let wl;async function lock(){try{wl=await navigator.wakeLock.request("screen")}catch{}}
@@ -299,6 +327,7 @@ function autoRelease(){if(!document.body.classList.contains("night"))return;
 $("nbtn").onclick=()=>setNight(!document.body.classList.contains("night"));
 {let nv=false;try{nv=localStorage.getItem("sd_night")=="1"}catch{}setNight(nv,true)}
 setInterval(()=>{const r=()=>Math.round(Math.random()*16-8);document.querySelector("main").style.transform=`translate(${r()}px,${r()}px)`},3e5);
+status();setInterval(status,5*6e4);
 tick();setInterval(tick,1000);
 weather();news();cal();
 setInterval(weather,15*6e4);setInterval(news,10*6e4);setInterval(cal,10*6e4);setInterval(drawCal,6e4);setInterval(()=>{NI++;drawNews()},2e4);
