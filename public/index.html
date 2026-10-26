@@ -113,6 +113,35 @@ button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-rad
 @media (orientation:portrait){main{grid-template-columns:1fr}.clock,.st{grid-column:1}.col>.row2{flex:none}}
 html.stack main{grid-template-columns:1fr}
 html.stack .clock,html.stack .st{grid-column:1}
+
+/* ゆとりを持たせた時計・ウィジェット配置 */
+body{padding:clamp(16px,2vw,30px)}
+main{gap:clamp(18px,2vw,24px)}
+.col{gap:clamp(16px,1.8vw,22px)}
+section{padding:clamp(18px,1.8vw,24px) clamp(20px,2vw,28px);border-radius:20px}
+.clock{align-items:center;gap:12px clamp(24px,3vw,40px);padding:12px 10px 18px;min-height:clamp(112px,14vh,160px)}
+.tools{align-self:center;gap:12px}
+#gear,#nbtn{padding:12px 16px}
+h2{margin-bottom:14px}
+.st{padding-top:20px;padding-bottom:22px}
+#st{gap:12px}
+#st li{min-height:116px;border-radius:14px}
+.rail-top{gap:12px;padding:12px 16px;min-height:58px}
+.rail-code-image{width:40px;height:40px;flex-basis:40px}
+.rail-body{gap:8px;padding:13px 16px 16px}
+.rail-statusline{gap:10px}
+.sthint{margin-top:14px}
+@media(max-width:700px){
+ body{padding:14px}
+ main{gap:16px}
+ .col{gap:16px}
+ section{padding:16px 18px}
+ .clock{min-height:100px;padding:8px 4px 14px;gap:8px 18px}
+ .tools{gap:8px}
+ #gear,#nbtn{padding:9px 11px}
+ #st{gap:10px}
+ #st li{min-height:104px}
+}
 </style>
 </head>
 <body>
@@ -238,7 +267,6 @@ function chk(r,t){
  if(r.status==404)throw Error("中継機能が見つかりません(404)。functions/api/proxy.js の場所を確認");
  if(r.status==502)throw Error("取得元がエラーを返しました("+t.replace("upstream:","")+")。URLを確認");
  if(!r.ok)throw Error("取得に失敗しました("+r.status+")")}
-const FB="https://news.yahoo.co.jp/rss/topics/top-picks.xml";
 async function feed(u){const r=await fetch(px(u));const t=await r.text();chk(r,t);
  const it=[...new DOMParser().parseFromString(t,"text/xml").querySelectorAll("item")].slice(0,6);
  if(!it.length)throw Error("RSSの形式が読み取れません");
@@ -251,8 +279,7 @@ function drawNews(){const u=$("news"),n=NW.length;if(!n)return;
  const it=[lead];for(let k=1;k<=m;k++)it.push(el("li","sm",g(k).t));
  u.replaceChildren(...it)}
 async function news(){const u=$("news");let h="ニュース",ts;
- try{ts=await feed(C.rss)}catch(e){
-  try{ts=await feed(FB);h="ニュース(代替: Yahoo!)"}catch{u.replaceChildren(el("li","err",e.message+" URL: "+C.rss));return}}
+ try{ts=await feed(C.rss)}catch(e){u.replaceChildren(el("li","err",e.message+" URL: "+C.rss));return}
  $("nwh").textContent=h;NW=ts;NI=0;drawNews()}
 
 /* カレンダー(ICS) */
