@@ -83,7 +83,7 @@ label{display:block;font-size:14px;color:var(--mu);margin:12px 0 4px}
 input,textarea,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px}
 textarea{height:70px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button.pr2{margin-top:10px;background:none;color:var(--hi);border:1px solid var(--hi);border-radius:12px;padding:12px 10px;font:inherit;font-weight:700}
+.route-picker{margin-top:4px}.route-controls{grid-template-columns:minmax(0,1fr) auto;align-items:center}.route-controls select{min-width:0}.route-controls button.pr2{margin:0;white-space:nowrap}.route-picked-label{font-size:13px;color:var(--mu);margin:12px 0 5px}.picked-routes{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:7px}.picked-routes li{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:5px 8px}.picked-routes button{border:0;background:transparent;color:var(--mu);font:inherit;font-size:18px;line-height:1;cursor:pointer}.route-picker small{display:block;color:var(--mu);margin-top:8px}button.pr2{margin-top:10px;background:none;color:var(--hi);border:1px solid var(--hi);border-radius:12px;padding:12px 10px;font:inherit;font-weight:700}
 button.pr{margin-top:16px;background:var(--hi);color:#08201d;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700}
 .st{grid-column:1/3}
 #st{gap:6px}
@@ -186,8 +186,13 @@ h2{margin-bottom:14px}
     <div><label>金曜</label><input name="s5"></div>
     <div><label>土曜</label><input name="s6"></div>
   </div>
-  <label>運行情報を表示する路線(1行に1つ。Yahoo!路線情報の路線名に近い名前を入力)</label>
-  <textarea name="lines" placeholder="JR東日本 埼京線"></textarea>
+<label>運行情報を表示する路線</label>
+  <div class="route-picker">
+    <div class="row route-controls"><select id="routeChoice" aria-label="追加する路線"><option value="">路線候補を読み込み中...</option></select><button type="button" class="pr2" id="addRoute">追加</button></div>
+    <div class="route-picked-label">表示する路線</div><ul id="pickedRoutes" class="picked-routes"></ul>
+    <textarea name="lines" hidden></textarea>
+    <small id="routePickerHint">Yahoo!路線情報から候補を読み込みます。</small>
+  </div>
   <label>文字の大きさ <span id="zv"></span></label>
   <input type="range" name="z" min="0.8" max="2.5" step="0.05">
   <label>ダイヤの切り替え</label>
@@ -385,9 +390,14 @@ const setZ=v=>{document.documentElement.style.setProperty("--z",v);document.docu
 function applyZ(){const v=parseFloat(C.z);setZ(v>=.7&&v<=2.5?v:1.15)}
 applyZ();
 f.elements.z.oninput=()=>{const v=parseFloat(f.elements.z.value);$("zv").textContent="(×"+v.toFixed(2)+")";setZ(v)};
-$("dlg").addEventListener("close",applyZ);
+const routeFallback=["山手線","京浜東北線","東海道線","横須賀線","横浜線","南武線","埼京線","湘南新宿ライン","中央線快速","中央・総武線各駅停車","京葉線","武蔵野線","常磐線快速","常磐線各駅停車","宇都宮線","高崎線","ニューシャトル","埼玉新都市交通","東武東上線","東武スカイツリーライン","東武アーバンパークライン","西武池袋線","西武新宿線","京急線","京成線","京王線","小田急線","東急東横線","東急田園都市線","東京メトロ銀座線","東京メトロ丸ノ内線","東京メトロ東西線","東京メトロ千代田線","東京メトロ有楽町線","東京メトロ半蔵門線","東京メトロ南北線","東京メトロ副都心線","都営浅草線","都営三田線","都営新宿線","都営大江戸線","つくばエクスプレス","りんかい線","相鉄線","多摩モノレール","都電荒川線"];
+let routeOptionsLoaded=false;
+function getPickedRoutes(){return [...new Set(($("f").elements.lines.value||"").split(/\n+/).map(x=>x.trim()).filter(Boolean))]}
+function renderPickedRoutes(){const list=$("pickedRoutes"),picked=getPickedRoutes();list.replaceChildren(...picked.map(name=>{const li=el("li"),label=el("span",null,name),remove=el("button",null,"×");remove.type="button";remove.setAttribute("aria-label",name+"を削除");remove.onclick=()=>{$("f").elements.lines.value=getPickedRoutes().filter(x=>x!==name).join("\n");renderPickedRoutes()};li.append(label,remove);return li}));}
+async function loadRouteChoices(){if(routeOptionsLoaded)return;const select=$("routeChoice"),hint=$("routePickerHint");try{const settled=await Promise.allSettled(Array.from({length:8},async(_,i)=>{const r=await fetch(px("https://transit.yahoo.co.jp/diainfo/area/"+(i+2))),t=await r.text();if(!r.ok)throw Error("Yahoo!候補の取得に失敗");const doc=new DOMParser().parseFromString(t,"text/html");return [...doc.querySelectorAll(".elmExpandList li > a > dl dt.title")].map(x=>x.textContent.trim()).filter(Boolean)}));const names=[...new Set(settled.filter(x=>x.status==="fulfilled").flatMap(x=>x.value))].sort((a,b)=>a.localeCompare(b,"ja"));if(!names.length)throw Error("候補一覧を読み込めませんでした");select.replaceChildren(new Option("路線を選択してください",""),...names.map(n=>new Option(n,n)));hint.textContent="Yahoo!路線情報から"+names.length+"路線を読み込みました。";}catch{select.replaceChildren(new Option("路線を選択してください",""),...routeFallback.map(n=>new Option(n,n)));hint.textContent="Yahoo!の候補を取得できないため、主な路線候補を表示しています。"}routeOptionsLoaded=true;}
+$("addRoute").onclick=()=>{const value=$("routeChoice").value;if(!value)return;const picked=getPickedRoutes();if(!picked.includes(value))picked.push(value);$("f").elements.lines.value=picked.join("\n");renderPickedRoutes();$("routeChoice").selectedIndex=0};$("dlg").addEventListener("close",applyZ);
 const fmt=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
-$("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("tt").value=fmt(cur());f.elements.z.oninput();$("dlg").showModal()};
+$("gear").onclick=()=>{for(const k in DEF)if(f.elements[k])f.elements[k].value=C[k];$("tt").value=fmt(cur());f.elements.z.oninput();renderPickedRoutes();loadRouteChoices();$("dlg").showModal()};
 $("tset").onclick=()=>{const v=$("tt").value;if(!v)return;OFF=new Date(v).getTime()-Date.now();SD="";$("dlg").close();tick();cal()};
 $("treset").onclick=()=>{OFF=0;SD="";$("dlg").close();tick();cal()};
 f.onsubmit=()=>{SD="";for(const k in DEF)if(f.elements[k])C[k]=f.elements[k].value.trim();
